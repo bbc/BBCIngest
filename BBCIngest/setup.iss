@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "BBCIngest"
-#define MyAppVersion "1.2"
+#define MyAppVersion GetStringFileInfo("C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\BBCIngest.exe", "ProductVersion")
 #define MyAppPublisher "BBC World Service"
 #define MyAppURL "http://www.bbc.com/worldserviceradio"
 #define MyAppExeName "BBCIngest.exe"
@@ -24,6 +24,7 @@ DisableProgramGroupPage=yes
 OutputBaseFilename={#MyAppName}_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
+;OutputDir="C:\Users\Julian\Desktop"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -49,6 +50,7 @@ Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCInge
 Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\System.Net.Http.Primitives.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\System.Net.Http.Primitives.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\README.md"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

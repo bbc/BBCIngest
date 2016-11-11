@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -30,6 +31,9 @@ namespace BBCIngest
             {
                 appSettings = value;
                 propertyGrid1.SelectedObject = appSettings;
+                int avw = appSettings.ValueWidth();
+                int alw = appSettings.LabelWidth();
+                propertyGrid1.Width = 7 * (alw + avw);
             }
         }
 

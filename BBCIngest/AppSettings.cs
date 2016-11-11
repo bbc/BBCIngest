@@ -8,6 +8,7 @@ namespace BBCIngest
 {
     public class AppSettings
     {
+        public bool appSettingsChanged;
         private int minutesBefore = 4;
         private string basename = "bbcminute";
         private string prefix = "http://wsodprogrf.bbc.co.uk/bd/tx/bbcminute/mp3/";
@@ -128,7 +129,7 @@ namespace BBCIngest
         {
             get
             {
-                return addPathSeparatorIfNeeded(publish);
+                return addDirectorSeparatorIfNeeded(publish);
             }
 
             set
@@ -141,7 +142,7 @@ namespace BBCIngest
         {
             get
             {
-                return addPathSeparatorIfNeeded(archive);
+                return addDirectorSeparatorIfNeeded(archive);
             }
 
             set
@@ -154,7 +155,7 @@ namespace BBCIngest
         {
             get
             {
-                return addPathSeparatorIfNeeded(logfolder);
+                return addDirectorSeparatorIfNeeded(logfolder);
             }
 
             set
@@ -191,7 +192,6 @@ namespace BBCIngest
             }
         }
 
-        public bool appSettingsChanged { get; set; }
 
         [CategoryAttribute("Target")]
         public bool UseLocaltime
@@ -233,6 +233,32 @@ namespace BBCIngest
             {
                 broadcastMinuteAfter = value;
             }
+        }
+
+        public int ValueWidth()
+        {
+            int w = 0;
+            PropertyInfo[] p = this.GetType().GetProperties();
+            for (int i = 0; i < p.Length; i++)
+            {
+                int l = p[i].GetValue(this).ToString().Length;
+                if (l > w)
+                    w = l;
+            }
+            return w;
+        }
+
+        public int LabelWidth()
+        {
+            int w = 0;
+            PropertyInfo[] p = this.GetType().GetProperties();
+            for (int i = 0; i < p.Length; i++)
+            {
+                int l = p[i].Name.Length;
+                if (l > w)
+                    w = l;
+            }
+            return w;
         }
 
         public bool LoadAppSettings()
@@ -291,13 +317,14 @@ namespace BBCIngest
             return appSettingsChanged;
         }
 
-        private string addPathSeparatorIfNeeded(string p)
+        private string addDirectorSeparatorIfNeeded(string p)
         {
-            if (p.EndsWith("" + Path.PathSeparator))
+            char e = p[p.Length - 1];
+            if (e == Path.DirectorySeparatorChar)
             {
                 return p;
             }
-            return p + Path.PathSeparator;
+            return p + Path.DirectorySeparatorChar;
         }
     }
 }
