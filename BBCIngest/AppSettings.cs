@@ -136,7 +136,7 @@ namespace BBCIngest
         public string discname(DateTime t)
         {
             string s = "";
-            if (Discdate != "")
+            if (Discdate != "") // allow empty Discdate to force fixed discname
             {
                 if (UseLocaltime)
                 {
