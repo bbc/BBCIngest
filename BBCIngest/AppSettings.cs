@@ -9,121 +9,81 @@ namespace BBCIngest
     public class AppSettings
     {
         public bool appSettingsChanged;
-        private int minutesBefore = 4;
-        private string basename = "bbcminute";
-        private string prefix = "http://wsodprogrf.bbc.co.uk/bd/tx/bbcminute/mp3/";
-        private string webdate = "yyMMddHHmm";
-        private string discdate = "HHmm";
-        private string minutepattern = "00,30";
-        private string hourpattern = "*";
-        private string city = "London";
-        private string station = "BBC World Service";
-        private string publish = @"C:\source\";
-        private string archive = @"C:\archive\";
-        private string logfolder = @"C:\log\";
         private string defaultDir;
-        private bool useLocaltime = false;
-        private string suffix = "mp3";
-        private int broadcastMinuteAfter = 0;
 
-        [CategoryAttribute("Source")]
-        public int MinutesBefore
+        private string archive;
+        public string Archive
         {
             get
             {
-                return minutesBefore;
+                return addDirectorSeparatorIfNeeded(archive);
             }
 
             set
             {
-                minutesBefore = value;
+                archive = value;
             }
         }
 
-        [CategoryAttribute("Source")]
-        public string Basename
+        [CategoryAttribute("Logging")]
+        public string City { get; set; }
+
+        [CategoryAttribute("Logging")]
+        public string Station { get; set; }
+
+        [CategoryAttribute("Logging")]
+        private string logfolder;
+        public string Logfolder
         {
             get
             {
-                return basename;
+                return addDirectorSeparatorIfNeeded(logfolder);
             }
 
             set
             {
-                basename = value;
+                logfolder = value;
             }
         }
+
+        [CategoryAttribute("Logging")]
+        public string LogUrl { get; set; }
+
+        [CategoryAttribute("Logging")]
+        public bool PostLogs { get; set; }
 
         [CategoryAttribute("Source")]
-        public string Prefix
-        {
-            get
-            {
-                return prefix;
-            }
-
-            set
-            {
-                prefix = value;
-            }
-        }
+        public int MinutesBefore { get; set; }
 
         [CategoryAttribute("Source")]
-        public string Webdate
-        {
-            get
-            {
-                return webdate;
-            }
+        public string Basename { get; set; }
 
-            set
-            {
-                webdate = value;
-            }
-        }
+        [CategoryAttribute("Source")]
+        public string Prefix { get; set; }
+
+        [CategoryAttribute("Source")]
+        public string Webdate { get; set; }
+        [CategoryAttribute("Source")]
+        public string Minutepattern { get; set; }
+
+        [CategoryAttribute("Source")]
+        public string Hourpattern { get; set; }
+
+        [CategoryAttribute("Source")]
+        public string Suffix { get; set; }
+        [CategoryAttribute("Target")]
+        public string Discdate { get; set; }
 
         [CategoryAttribute("Target")]
-        public string Discdate
-        {
-            get
-            {
-                return discdate;
-            }
+        public bool UseLocaltime { get; set; }
 
-            set
-            {
-                discdate = value;
-            }
-        }
+        [CategoryAttribute("Target")]
+        public int BroadcastMinuteAfter { get; set; }
 
-        [CategoryAttribute("Station")]
-        public string City
-        {
-            get
-            {
-                return city;
-            }
+        [CategoryAttribute("Target")]
+        public bool SafePublishing { get; set; }
 
-            set
-            {
-                city = value;
-            }
-        }
-
-        [CategoryAttribute("Station")]
-        public string Station
-        {
-            get
-            {
-                return station;
-            }
-
-            set
-            {
-                station = value;
-            }
-        }
-
+        private string publish;
         [CategoryAttribute("Target")]
         public string Publish
         {
@@ -138,112 +98,19 @@ namespace BBCIngest
             }
         }
 
-        public string Archive
-        {
-            get
-            {
-                return addDirectorSeparatorIfNeeded(archive);
-            }
-
-            set
-            {
-                archive = value;
-            }
-        }
-
-        public string Logfolder
-        {
-            get
-            {
-                return addDirectorSeparatorIfNeeded(logfolder);
-            }
-
-            set
-            {
-                logfolder = value;
-            }
-        }
-
-        [CategoryAttribute("Source")]
-        public string Minutepattern
-        {
-            get
-            {
-                return minutepattern;
-            }
-
-            set
-            {
-                minutepattern = value;
-            }
-        }
-
-        [CategoryAttribute("Source")]
-        public string Hourpattern
-        {
-            get
-            {
-                return hourpattern;
-            }
-
-            set
-            {
-                hourpattern = value;
-            }
-        }
-
-
-        [CategoryAttribute("Target")]
-        public bool UseLocaltime
-        {
-            get
-            {
-                return useLocaltime;
-            }
-
-            set
-            {
-                useLocaltime = value;
-            }
-        }
-
-        [CategoryAttribute("Source")]
-        public string Suffix
-        {
-            get
-            {
-                return suffix;
-            }
-
-            set
-            {
-                suffix = value;
-            }
-        }
-
-        [CategoryAttribute("Target")]
-        public int BroadcastMinuteAfter
-        {
-            get
-            {
-                return broadcastMinuteAfter;
-            }
-
-            set
-            {
-                broadcastMinuteAfter = value;
-            }
-        }
-
         public int ValueWidth()
         {
             int w = 0;
             PropertyInfo[] p = this.GetType().GetProperties();
             for (int i = 0; i < p.Length; i++)
             {
-                int l = p[i].GetValue(this).ToString().Length;
-                if (l > w)
-                    w = l;
+                Object o = p[i].GetValue(this);
+                if(o != null)
+                {
+                    int l = o.ToString().Length;
+                    if (l > w)
+                        w = l;
+                }
             }
             return w;
         }
@@ -261,15 +128,48 @@ namespace BBCIngest
             return w;
         }
 
+        public string webname(DateTime t)
+        {
+            return Basename + t.ToString(Webdate) + "." + Suffix;
+        }
+
+        public string discname(DateTime t)
+        {
+            string s = "";
+            if (Discdate != "")
+            {
+                if (UseLocaltime)
+                {
+                    s = t.ToLocalTime().ToString(Discdate);
+                }
+                else
+                {
+                    s = t.ToString(Discdate);
+                }
+            }
+            return Basename + s + "." + Suffix;
+        }
+
+        public string latest()
+        {
+            return Archive + Basename + "." + Suffix;
+        }
+
+        public AppSettings ShallowCopy()
+        {
+            return (AppSettings)this.MemberwiseClone();
+        }
+
         public bool LoadAppSettings()
         {
+            string settingsPath = System.Windows.Forms.Application.LocalUserAppDataPath;
             XmlSerializer sz = null;
             FileStream fs = null;
             bool fileExists = false;
             try
             {
                 sz = new XmlSerializer(typeof(AppSettings));
-                FileInfo fi = new FileInfo(System.Windows.Forms.Application.LocalUserAppDataPath+@"\BBCIngest.config");
+                FileInfo fi = new FileInfo(settingsPath+@"\BBCIngest.config");
                 if (fi.Exists)
                 {
                     fs = fi.OpenRead();
@@ -280,6 +180,30 @@ namespace BBCIngest
                     {
                         p[i].SetValue(this, p[i].GetValue(mas));
                     }
+                    // or use ShallowCopy?
+                }
+                else
+                {
+                    Logfolder = settingsPath; // @"C:\log\";
+                    Archive = settingsPath; // @"C:\archive\";
+
+                    MinutesBefore = 4;
+                    Prefix = "http://wsodprogrf.bbc.co.uk/bd/tx/bbcminute/mp3/";
+                    Basename = "bbcminute";
+                    Webdate = "yyMMddHHmm";
+                    Suffix = "mp3";
+
+                    Hourpattern = "*";
+                    Minutepattern = "00,30";
+
+                    Publish = @"C:\source\";
+                    Discdate = "HHmm";
+                    BroadcastMinuteAfter = 0;
+
+                    PostLogs = true;
+                    LogUrl = "http://212.58.226.73/pub/bbcingest.php";
+                    City = "London";
+                    Station = "BBC World Service";
                 }
             }
             catch(Exception ex)

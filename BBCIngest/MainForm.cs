@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace BBCIngest
@@ -6,6 +7,7 @@ namespace BBCIngest
     public partial class MainForm : Form
     {
         private Fetch fetcher = null;
+        private AppSettings conf;
 
         public MainForm()
         {
@@ -14,14 +16,13 @@ namespace BBCIngest
 
         private async void OnLoad(object sender, EventArgs e)
         {
-            fetcher = new Fetch(this);
+            conf = new AppSettings();
+            conf.LoadAppSettings();
+            Directory.CreateDirectory(conf.Publish);
+            Directory.CreateDirectory(conf.Archive);
+            Directory.CreateDirectory(conf.Logfolder);
+            fetcher = new Fetch(this, conf);
             await fetcher.main();
-        }
-
-        private void sendlog()
-        {
-            //var url = "mailto:emailnameu@domain.com&attachment=a.txt";
-            //System.Diagnostics.Process.Start(url);
         }
 
         public void setLine1(string s)
@@ -37,12 +38,13 @@ namespace BBCIngest
         private void button1_Click(object sender, EventArgs e)
         {
             SettingsForm sf = new SettingsForm();
-            sf.AppSettings = fetcher.Conf;
+            sf.AppSettings = conf.ShallowCopy();
             DialogResult r = sf.ShowDialog(this);
             if(r == DialogResult.OK)
             {
-                fetcher.Conf = sf.AppSettings;
-                fetcher.Conf.SaveAppSettings();
+                conf = sf.AppSettings;
+                conf.SaveAppSettings();
+                fetcher.ChangeConfig(conf);
             }
             sf.Dispose();
         }

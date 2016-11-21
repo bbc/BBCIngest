@@ -4,43 +4,30 @@ using System.Net.Http;
 using System.Net;
 using System.IO;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace BBCIngest
 {
     class Fetch
     {
-        private AppSettings conf = new AppSettings();
+        private AppSettings conf;
         private Logging log;
         private Schedule schedule;
         private MainForm mainForm;
         private HttpClient hc;
+        private CancellationTokenSource tokenSource;
 
-        public Fetch(MainForm mainForm)
+        public Fetch(MainForm mainForm, AppSettings conf)
         {
             this.mainForm = mainForm;
+            this.conf = conf;
         }
 
-        public AppSettings Conf
+        internal void ChangeConfig(AppSettings conf)
         {
-            get
-            {
-                return conf;
-            }
-
-            set
-            {
-                conf = value;
-            }
-        }
-
-        private string name(DateTime t, string fmt)
-        {
-            return conf.Basename + t.ToString(fmt) + "." + conf.Suffix;
-        }
-
-        private string latest()
-        {
-            return conf.Archive + conf.Basename + "." + conf.Suffix;
+            this.conf = conf;
+            log.WriteLine("new config");
+            //tokenSource.Cancel();
         }
 
         private async Task waitnear(DateTime t)
@@ -50,13 +37,13 @@ namespace BBCIngest
             if (d > 0)
             {
                 mainForm.setLine1("waiting until " + pub.ToString("t"));
-                await Task.Delay(d);
+                await Task.Delay(d, tokenSource.Token);
             }
         }
 
-        private async Task<string> waitfor(DateTime t, DateTime end)
+        private async Task<DateTimeOffset?> waitfor(DateTime t, DateTime end)
         {
-            string file = name(t, conf.Webdate);
+            string file = conf.webname(t);
             string url = conf.Prefix + file;
             HttpResponseMessage response = null;
             do
@@ -67,7 +54,7 @@ namespace BBCIngest
                     file + " " + response.ReasonPhrase + " at " + DateTime.UtcNow.ToString("HH:mm:ss"));
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    string r = response.Content.Headers.LastModified.ToString();
+                    DateTimeOffset? r = response.Content.Headers.LastModified;
                     response.Dispose();
                     return r;
                 }
@@ -81,66 +68,94 @@ namespace BBCIngest
             return null;
         }
 
-        private async Task save(DateTime t)
+        private async Task save(DateTime t, DateTimeOffset? cdto)
         {
             string tmpname = conf.Archive + conf.Basename + ".tmp";
-            Stream stream = await hc.GetStreamAsync(conf.Prefix + name(t, conf.Webdate));
+            Stream stream = await hc.GetStreamAsync(conf.Prefix + conf.webname(t));
             Stream ds = System.IO.File.Open(tmpname, FileMode.OpenOrCreate);
             await stream.CopyToAsync(ds);
             ds.Dispose();
             stream.Dispose();
             FileInfo f = new FileInfo(tmpname);
-            string savename = latest();
+            string savename = conf.latest();
             System.IO.File.Delete(savename);
             f.MoveTo(savename);
+            if(cdto != null)
+            {
+                f.CreationTimeUtc = cdto.Value.UtcDateTime;
+            }
         }
 
-        private DateTime publish(DateTime t)
+        private DateTime latestPublishTime(FileInfo f)
         {
-            string fn = latest();
-            FileInfo f = new FileInfo(fn);
-            if (f.Exists == false)
+            DateTime dt = f.CreationTimeUtc;
+            if (conf.Suffix == "mp3")
             {
-                return DateTime.UtcNow.AddDays(-1); // make it old as can't make it null
-            }
-            DateTime dt = f.LastWriteTimeUtc;
-            if (conf.Prefix == "mp3")
-            {
-                TagLib.File tf = TagLib.File.Create(fn);
+                TagLib.File tf = TagLib.File.Create(f.FullName);
                 string s = tf.Tag.Comment.Replace("UTC", "GMT");
                 dt = DateTime.Parse(s);
                 tf.Dispose();
             }
             mainForm.setLine2("Latest is " + dt.ToString());
-            string discname = name(t, conf.Discdate);
-            if (conf.UseLocaltime)
-            {
-                discname = name(t.ToLocalTime(), conf.Discdate);
-            }
-            f.CopyTo(conf.Publish + discname, true);
             return dt;
+        }
+
+        private void publish(DateTime t)
+        {
+            FileInfo f = new FileInfo(conf.latest());
+            if (f.Exists == false)
+            {
+                return;
+            }
+            DateTime dt = latestPublishTime(f);   
+            string savename = conf.Publish + conf.discname(t);
+            if (conf.SafePublishing)
+            {
+                string tempname = conf.Publish + conf.Basename + ".tmp";
+                try
+                {
+                    FileInfo pf = f.CopyTo(tempname, true);
+                    // if no exception we are OK to overwrite
+                    System.IO.File.Delete(savename);
+                    pf.MoveTo(savename);
+                }
+                catch
+                {
+                    mainForm.setLine1("error writing to " + conf.Publish + " folder");
+                }
+            }
+            else
+            {
+                f.CopyTo(savename, true);
+            }
+        }
+
+        private async Task<DateTimeOffset?> fetchOld(DateTime t)
+        {
+            mainForm.setLine1("creating ingest using latest edition");
+            DateTime prev = schedule.previous();
+            DateTimeOffset? lmd = await waitfor(prev, DateTime.UtcNow);
+            if (lmd != null)
+            {
+                FileInfo old = new FileInfo(conf.latest());
+                // prev will be the nominal time. latestPublishTime should be a few minutes earlier
+                if (old.Exists == false || prev.AddMinutes(-10) > latestPublishTime(old))
+                {
+                    await save(prev, lmd);
+                }
+                publish(prev);
+            }
+            return lmd;
         }
 
         private async Task fetch(DateTime t)
         {
-            mainForm.setLine1("creating ingest using latest edition");
-            DateTime published = publish(t);
-            DateTime prev = schedule.previous();
-            string lmd = null;
-            if (published < prev) // there might be a newer one
-            {
-                lmd = await waitfor(prev, DateTime.UtcNow);
-                if (lmd != null)
-                {
-                    await save(prev);
-                    publish(prev);
-                }
-            }
-            string nlmd = await waitfor(t, t.AddMinutes(conf.BroadcastMinuteAfter));
+            DateTimeOffset? lmd = await fetchOld(t);
+            DateTimeOffset? nlmd = await waitfor(t, t.AddMinutes(conf.BroadcastMinuteAfter));
             DateTime before = DateTime.UtcNow;
             if (nlmd != null)
             {
-                await save(t);
+                await save(t, nlmd);
                 publish(t);
             }
             if (nlmd == null)
@@ -155,8 +170,7 @@ namespace BBCIngest
                 DateTime after = DateTime.UtcNow;
                 string logmessage = t.ToString("HH:mm") + " edition"
                     + " published at " + nlmd + " and downloaded at " + before.ToString("HH:mm:ss")
-                    + " in " + Math.Round(after.Subtract(before).TotalSeconds, 2) + "s"
-                    + " by " + conf.Station + " in " + conf.City;
+                    + " in " + Math.Round(after.Subtract(before).TotalSeconds, 2) + "s";                    
                 log.WriteLine(logmessage);
                 // wait until after pubdate before trying for next edition
                 int d = (int)t.Subtract(after).TotalMilliseconds;
@@ -170,32 +184,46 @@ namespace BBCIngest
 
         public async Task main()
         {
-            // TODO button to allow log to be emailed and cleared.
-            conf.LoadAppSettings();
-            Directory.CreateDirectory(conf.Publish);
-            Directory.CreateDirectory(conf.Archive);
-            Directory.CreateDirectory(conf.Logfolder);
+            tokenSource = new CancellationTokenSource();
             HttpClientHandler httpClientHandler = new HttpClientHandler()
             {
                 Proxy = WebRequest.GetSystemWebProxy()
             };
             hc = new HttpClient(httpClientHandler);
-            log = new Logging(conf.Logfolder + conf.Basename + ".log");
-            schedule = new Schedule(conf);
-            try
+            while (true)
             {
-                while (true)
+                log = new Logging(conf, hc);
+                schedule = new Schedule(conf);
+                DateTimeOffset? lmd = await fetchOld(schedule.previous());
+                FileInfo f = new FileInfo(conf.latest());
+                string s = f.FullName;
+                if (f.Exists)
                 {
-                    DateTime t = schedule.next();
-                    // wait until a few minutes before publication
-                    await waitnear(t);
-                    await fetch(t);
+                    latestPublishTime(f);
                 }
-            }
-            catch (HttpRequestException ex)
-            {
-                MessageBox.Show(ex.Message);
-                log.WriteLine(ex.Message);
+                else
+                {
+                    mainForm.setLine2("no file yet");
+                }
+                try
+                {
+                    while (true)
+                    {
+                        DateTime t = schedule.next();
+                        // wait until a few minutes before publication
+                        await waitnear(t);
+                        await fetch(t);
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    log.WriteLine(ex.Message);
+                }
+                catch (TaskCanceledException ex2)
+                {
+                    mainForm.setLine1("restarting after config change");
+                }
             }
         }
     }
