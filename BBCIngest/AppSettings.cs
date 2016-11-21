@@ -201,7 +201,7 @@ namespace BBCIngest
                     BroadcastMinuteAfter = 0;
 
                     PostLogs = true;
-                    LogUrl = "http://212.58.226.73/pub/bbcingest.php";
+                    LogUrl = "";
                     City = "London";
                     Station = "BBC World Service";
                 }
