@@ -24,8 +24,13 @@ Download and error information is written to a file in the log directory.
 The file fetched is determined by the prefix, basename, webdate and suffix settings. The webdate setting is a .Net DateTime format.
 The suffix is probably mp3 or wav.
 
+If the webdate is the empty string the prefix is used as the entire URL. This allows polling for static URLs where new editions are determined by
+the last modified date header of the HTTP HEAD response.
+
 The file published is set by the, publish, basename, discdate, useLocaltime and suffix settings. The discdate is a .Net DateTime format.
 If useLocalTime is false the published file will contain the due date in UTC.
 If useLocalTime is true the published file will contain the due date in the PC's local timezone.
+If the discdate is the empty string then the output filename is just the basename with the suffix as the extension. This allows publishing to a fixed filename.
 
 The city and station settings only affect text writting to the log file.
+If the logUrl is set, then log messages are http posted to that url as a JSON object.
