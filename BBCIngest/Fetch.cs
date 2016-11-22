@@ -15,7 +15,6 @@ namespace BBCIngest
         private Schedule schedule;
         private MainForm mainForm;
         private HttpClient hc;
-        private CancellationTokenSource tokenSource;
 
         public Fetch(MainForm mainForm, AppSettings conf)
         {
@@ -37,80 +36,52 @@ namespace BBCIngest
             if (d > 0)
             {
                 mainForm.setLine1("waiting until " + pub.ToString("t"));
-                await Task.Delay(d, tokenSource.Token);
+                await Task.Delay(d);
             }
         }
 
-        private async Task<DateTimeOffset?> waitforChange(string file, DateTime prev, DateTime end)
+        /*
+         * Note - this assumes files are uploaded near to the epoch
+         * For example BBC Minute is published 2-4 minutes before
+         * but in extremes up to 14 minutes after.
+         * 5 minute news bulletin is live and published about 1 minute after the end
+         * so around 6 minutes after the epoch
+         * TODO - think about early publishing - not untractable if filenames are unique to the edition
+         */
+        private async Task<DateTime?> editionAvailable(DateTime epoch)
         {
-            HttpResponseMessage response = null;
+            string url = conf.Prefix;
+            bool staticUrl = (conf.Webdate == "");
+            if (!staticUrl)
+            {
+                url += conf.webname(epoch);
+            }
+            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Head, url);
+            HttpResponseMessage response = await hc.SendAsync(msg);
+            msg.Dispose();
+            DateTimeOffset? r = response.Content.Headers.LastModified;
+            response.Dispose();
+            if (r == null)
+                return null;
+            if (r < epoch.AddMinutes(-10))
+                return null;
+            return r.Value.DateTime;
+        }
+
+        private async Task<DateTime?> waitfor(DateTime t, DateTime end)
+        {
+            DateTime? lmd = null;
             do
             {
-                HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Head, conf.Prefix);
-                response = await hc.SendAsync(msg);
-                if (response.StatusCode == HttpStatusCode.OK)
+                lmd = await editionAvailable(t);
+                if (lmd != null)
                 {
-                    DateTimeOffset? r = response.Content.Headers.LastModified;
-                    if (r != null && r > prev)
-                    {
-                        mainForm.setLine1(
-                            "New " + file + " " + response.ReasonPhrase + " at " + DateTime.UtcNow.ToString("HH:mm:ss"));
-                        response.Dispose();
-                        msg.Dispose();
-                        return r;
-                    }
+                    return lmd;
                 }
-                mainForm.setLine1(
-                    "Old " + file + " " + response.ReasonPhrase + " at " + DateTime.UtcNow.ToString("HH:mm:ss"));
-                response.Dispose();
-                msg.Dispose();
+                mainForm.setLine1("Waiting for " + t.ToString("HH:mm") + " edition at " + DateTime.UtcNow.ToString("HH:mm:ss"));
                 await Task.Delay(10 * 1000);
             }
             while (DateTime.UtcNow < end);
-            return null;
-        }
-
-        private async Task<DateTimeOffset?> waitfor(DateTime t, DateTime old, DateTime end)
-        {
-            string file = conf.Basename + "." + conf.Suffix;
-            string url = conf.Prefix;
-            if(conf.Webdate != "")
-            {
-                file = conf.webname(t);
-                url += file;
-            }
-            HttpResponseMessage response = null;
-            do
-            {
-                HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Head, url);
-                response = await hc.SendAsync(msg);
-                msg.Dispose();
-                mainForm.setLine1(
-                    file + " " + response.ReasonPhrase + " at " + DateTime.UtcNow.ToString("HH:mm:ss"));
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    DateTimeOffset? r = response.Content.Headers.LastModified;
-                    if (conf.Webdate != "")
-                    {
-                        response.Dispose();
-                        return r;
-                    }
-                    else
-                    {
-                        if (r > old)
-                        {
-                            response.Dispose();
-                            return r;
-                        }
-                    }
-                }
-                else
-                {
-                    await Task.Delay(10 * 1000);
-                }
-            }
-            while (DateTime.UtcNow < end);
-            response.Dispose();
             return null;
         }
 
@@ -140,7 +111,7 @@ namespace BBCIngest
 
         private DateTime latestPublishTime(FileInfo f)
         {
-            DateTime dt = f.CreationTimeUtc;
+            DateTime dt = f.LastWriteTimeUtc;
             if (conf.Suffix == "mp3")
             {
                 TagLib.File tf = TagLib.File.Create(f.FullName);
@@ -148,7 +119,6 @@ namespace BBCIngest
                 dt = DateTime.Parse(s);
                 tf.Dispose();
             }
-            mainForm.setLine2("Latest is " + dt.ToString());
             return dt;
         }
 
@@ -159,7 +129,7 @@ namespace BBCIngest
             {
                 return;
             }
-            DateTime dt = latestPublishTime(f);
+            mainForm.setLine2("Latest is " + latestPublishTime(f));
             string savename = conf.Publish + conf.discname(t);
             if (conf.SafePublishing)
             {
@@ -182,28 +152,20 @@ namespace BBCIngest
             }
         }
 
-        private async Task<DateTimeOffset?> fetchOld(DateTime t)
+        private void badMessage(DateTime t)
         {
-            mainForm.setLine1("creating ingest using latest edition");
-            DateTime prev = schedule.previous();
-            DateTime old = prev.AddMilliseconds(-10);
-            DateTimeOffset? lmd = await waitfor(prev, old, DateTime.UtcNow);
-            if (lmd != null)
+            string logmessage = "";
+            FileInfo f = new FileInfo(conf.latest());
+            if (f.Exists)
             {
-                FileInfo have = new FileInfo(conf.latest());
-                // prev will be the nominal time. latestPublishTime should be a few minutes earlier
-                if (have.Exists == false || old > latestPublishTime(have))
-                {
-                    await save(prev);
-                }
-                publish(prev);
+                DateTime lmd = latestPublishTime(f);
+                logmessage = t.ToString("HH:mm") + " edition was not found, using "
+                    + lmd.ToString("HH:mm") + " edition";
             }
-            return lmd;
-        }
-
-        private void badMessage(DateTime t, DateTime lmd)
-        {
-            string logmessage = t.ToString("HH:mm") + " edition was not found, using " + lmd + " edition";
+            else
+            {
+                logmessage = "no usable file";
+            }
             mainForm.setLine1(logmessage);
             log.WriteLine(logmessage);
         }
@@ -216,70 +178,72 @@ namespace BBCIngest
             log.WriteLine(logmessage);
         }
 
+        public async Task republish()
+        {
+            mainForm.setLine1("creating ingest using latest edition");
+            DateTime prev = schedule.previous();
+            DateTime? lmd = await editionAvailable(prev);
+            if (lmd == null)
+            {
+                mainForm.setLine2("no file yet");
+            }
+            else
+            {
+                FileInfo f = new FileInfo(conf.latest());
+                if (f.Exists == false || f.LastWriteTimeUtc < lmd)
+                {
+                    await save(prev);
+                }
+                publish(prev);
+            }
+        }
+
         public async Task main()
         {
-            tokenSource = new CancellationTokenSource();
             HttpClientHandler httpClientHandler = new HttpClientHandler()
             {
                 Proxy = WebRequest.GetSystemWebProxy()
             };
             hc = new HttpClient(httpClientHandler);
+            log = new Logging(conf, hc);
+            schedule = new Schedule(conf);
+            await republish();
+            await Task.Delay(2000); // let the user see the message
             while (true)
             {
-                log = new Logging(conf, hc);
-                schedule = new Schedule(conf);
-                DateTimeOffset? lmd = await fetchOld(schedule.previous());
-                FileInfo f = new FileInfo(conf.latest());
-                string s = f.FullName;
-                DateTime latest;
-                if (f.Exists)
-                {
-                    latest = latestPublishTime(f);
-                }
-                else
-                {
-                    mainForm.setLine2("no file yet");
-                }
                 try
                 {
-                    while (true)
+                    DateTime? lmd = null;
+                    DateTime t = schedule.next();
+                    // wait until a few minutes before publication
+                    await waitnear(t);
+                    await republish();
+                    lmd = await waitfor(t, t.AddMinutes(conf.BroadcastMinuteAfter));
+                    if (lmd == null)
                     {
-                        DateTimeOffset? nlmd = null;
-                        DateTime t = schedule.next();
-                        // wait until a few minutes before publication
-                        await waitnear(t);
-                        lmd = await fetchOld(t);
-                        nlmd = await waitfor(t, t.AddMinutes(-10), t.AddMinutes(conf.BroadcastMinuteAfter));
-                        if (nlmd == null)
-                        {
-                            badMessage(t, lmd.Value.UtcDateTime);
-                        }
-                        else
-                        {
-                            DateTime before = DateTime.UtcNow;
-                            await save(t);
-                            publish(t);
-                            DateTime after = DateTime.UtcNow;
-                            goodMessage(t, nlmd.Value.UtcDateTime, before, after);
-                        }
-                        await Task.Delay(5000); // let the user see the message
-                        // wait until after pubdate before trying for next edition
-                        int d = (int)t.Subtract(DateTime.UtcNow).TotalMilliseconds;
-                        if (d > 0)
-                        {
-                            mainForm.setLine1("waiting until " + t.ToString("t"));
-                            await Task.Delay(d);
-                        }
+                        badMessage(t);
+                    }
+                    else
+                    {
+                        DateTime before = DateTime.UtcNow;
+                        await save(t);
+                        publish(t);
+                        DateTime after = DateTime.UtcNow;
+                        goodMessage(t, lmd.Value, before, after);
+                    }
+                    await Task.Delay(2000); // let the user see the message
+                    // wait until after pubdate before trying for next edition
+                    int d = (int)t.Subtract(DateTime.UtcNow).TotalMilliseconds;
+                    if (d > 0)
+                    {
+                        mainForm.setLine1("waiting until " + t.ToString("t"));
+                        await Task.Delay(d);
                     }
                 }
                 catch (HttpRequestException ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    mainForm.setLine1(ex.Message);
                     log.WriteLine(ex.Message);
-                }
-                catch (TaskCanceledException ex2)
-                {
-                    mainForm.setLine1("restarting after config change");
                 }
             }
         }
