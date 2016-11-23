@@ -192,8 +192,10 @@ namespace BBCIngest
 
         private void goodMessage(DateTime t, DateTime lmd, DateTime before, DateTime after)
         {
-            string logmessage = t.ToString("HH:mm") + " edition"
-                + " published at " + lmd + " and downloaded at " + before.ToString("HH:mm:ss")
+            string message = t.ToString("HH:mm") + " edition"
+                + " published at " + lmd;
+            mainForm.setLine1(message);
+            string logmessage = message + " and downloaded at " + before.ToString("HH:mm:ss")
                 + " in " + Math.Round(after.Subtract(before).TotalSeconds, 2) + "s";
             log.WriteLine(logmessage);
         }
@@ -208,17 +210,27 @@ namespace BBCIngest
             log = new Logging(conf, hc);
             schedule = new Schedule(conf);
             await republish(schedule.next());
-            await Task.Delay(2000); // let the user see the message
+            await Task.Delay(4000); // let the user see the message
             while (true)
             {
                 try
                 {
                     DateTime? lmd = null;
-                    DateTime t = schedule.next();
-                    // wait until a few minutes before publication
-                    await waitnear(t);
-                    await republish(t);
-                    lmd = await waitfor(t, t.AddMinutes(conf.BroadcastMinuteAfter));
+                    DateTime t = schedule.previous();
+                    DateTime bc = t.AddMinutes(conf.BroadcastMinuteAfter);
+                    if (DateTime.UtcNow < bc) // check if we have time to publish a late file
+                    {
+                        await republish(t);
+                    }
+                    else  // no we don't
+                    {
+                        t = schedule.next();
+                        // wait until a few minutes before publication
+                        await waitnear(t);
+                        await republish(t);
+                        bc = t.AddMinutes(conf.BroadcastMinuteAfter);
+                    }
+                    lmd = await waitfor(t, bc);
                     if (lmd == null)
                     {
                         badMessage(t);
@@ -231,12 +243,12 @@ namespace BBCIngest
                         DateTime after = DateTime.UtcNow;
                         goodMessage(t, lmd.Value, before, after);
                     }
-                    await Task.Delay(2000); // let the user see the message
-                    // wait until after pubdate before trying for next edition
-                    int d = (int)t.Subtract(DateTime.UtcNow).TotalMilliseconds;
+                    await Task.Delay(4000); // let the user see the message
+                    // wait until after broadcast date before trying for next edition
+                    int d = (int)bc.Subtract(DateTime.UtcNow).TotalMilliseconds;
                     if (d > 0)
                     {
-                        mainForm.setLine1("waiting until " + t.ToString("t"));
+                        mainForm.setLine1("waiting until " + bc.ToString("t"));
                         await Task.Delay(d);
                     }
                 }
