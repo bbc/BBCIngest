@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\main.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="GSF.Core, Version=2.0.235.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GSF.Core.2.0.235\lib\net45\GSF.Core.dll</HintPath>
