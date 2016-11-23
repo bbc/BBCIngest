@@ -152,6 +152,26 @@ namespace BBCIngest
             }
         }
 
+        public async Task republish(DateTime t)
+        {
+            mainForm.setLine1("creating ingest using latest edition");
+            DateTime prev = schedule.previous();
+            DateTime? lmd = await editionAvailable(prev);
+            if (lmd == null)
+            {
+                mainForm.setLine2("no file yet");
+            }
+            else
+            {
+                FileInfo f = new FileInfo(conf.latest());
+                if (f.Exists == false || f.LastWriteTimeUtc < lmd)
+                {
+                    await save(prev);
+                }
+                publish(t);
+            }
+        }
+
         private void badMessage(DateTime t)
         {
             string logmessage = "";
@@ -178,26 +198,6 @@ namespace BBCIngest
             log.WriteLine(logmessage);
         }
 
-        public async Task republish()
-        {
-            mainForm.setLine1("creating ingest using latest edition");
-            DateTime prev = schedule.previous();
-            DateTime? lmd = await editionAvailable(prev);
-            if (lmd == null)
-            {
-                mainForm.setLine2("no file yet");
-            }
-            else
-            {
-                FileInfo f = new FileInfo(conf.latest());
-                if (f.Exists == false || f.LastWriteTimeUtc < lmd)
-                {
-                    await save(prev);
-                }
-                publish(prev);
-            }
-        }
-
         public async Task main()
         {
             HttpClientHandler httpClientHandler = new HttpClientHandler()
@@ -207,7 +207,7 @@ namespace BBCIngest
             hc = new HttpClient(httpClientHandler);
             log = new Logging(conf, hc);
             schedule = new Schedule(conf);
-            await republish();
+            await republish(schedule.next());
             await Task.Delay(2000); // let the user see the message
             while (true)
             {
@@ -217,7 +217,7 @@ namespace BBCIngest
                     DateTime t = schedule.next();
                     // wait until a few minutes before publication
                     await waitnear(t);
-                    await republish();
+                    await republish(t);
                     lmd = await waitfor(t, t.AddMinutes(conf.BroadcastMinuteAfter));
                     if (lmd == null)
                     {
