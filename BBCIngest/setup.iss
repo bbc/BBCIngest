@@ -24,7 +24,6 @@ DisableProgramGroupPage=yes
 OutputBaseFilename={#MyAppName}_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
-;OutputDir="C:\Users\Julian\Desktop"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
