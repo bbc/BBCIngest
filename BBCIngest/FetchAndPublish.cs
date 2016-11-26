@@ -76,36 +76,7 @@ namespace BBCIngest
             {
                 try
                 {
-                    DateTime now = DateTime.UtcNow;
-                    DateTime? lmd = null;
-                    DateTime t = schedule.current(now);
-                    DateTime bc = t.AddMinutes(conf.BroadcastMinuteAfter);
-                    if (now < bc) // check if we have time to publish a late file
-                    {
-                        await fetcher.reFetchIfNeeded(t);
-                    }
-                    else  // no we don't
-                    {
-                        t = schedule.next(now);
-                        // wait until a few minutes before publication
-                        await waitUntil(t.AddMinutes(0 - conf.MinutesBefore));
-                        await fetcher.reFetchIfNeeded(t);
-                        bc = t.AddMinutes(conf.BroadcastMinuteAfter);
-                    }
-                    // publish most recent as the next edition in case we can't get the next one
-                    publisher.publish(fetcher.latest(), t);
-                    lmd = await fetcher.waitfor(t, bc);
-                    if (lmd == null)
-                    {
-                        badMessage(t);
-                    }
-                    else
-                    {
-                        DateTime before = DateTime.UtcNow;
-                        await fetcher.save(t);
-                        publisher.publish(fetcher.latest(), t);
-                        fetchMessage(t.ToString("HH:mm") + " edition published at " + lmd);
-                    }
+                    DateTime bc = await fetchAndPublish();
                     await Task.Delay(4000); // let the user see the message
                     // wait until after broadcast date before trying for next edition
                     await waitUntil(bc);
@@ -119,6 +90,41 @@ namespace BBCIngest
                     f.Delete();
                 }
             }
+        }
+
+        public async Task<DateTime> fetchAndPublish()
+        {
+            DateTime now = DateTime.UtcNow;
+            DateTime? lmd = null;
+            DateTime t = schedule.current(now);
+            DateTime bc = t.AddMinutes(conf.BroadcastMinuteAfter);
+            if (now < bc) // check if we have time to publish a late file
+            {
+                await fetcher.reFetchIfNeeded(t);
+            }
+            else  // no we don't
+            {
+                t = schedule.next(now);
+                // wait until a few minutes before publication
+                await waitUntil(t.AddMinutes(0 - conf.MinutesBefore));
+                await fetcher.reFetchIfNeeded(t);
+                bc = t.AddMinutes(conf.BroadcastMinuteAfter);
+            }
+            // publish most recent as the next edition in case we can't get the next one
+            publisher.publish(fetcher.latest(), t);
+            lmd = await fetcher.waitfor(t, bc);
+            if (lmd == null)
+            {
+                badMessage(t);
+            }
+            else
+            {
+                DateTime before = DateTime.UtcNow;
+                await fetcher.save(t);
+                publisher.publish(fetcher.latest(), t);
+                fetchMessage(t.ToString("HH:mm") + " edition published at " + lmd);
+            }
+            return bc;
         }
 
         private void badMessage(DateTime t)
