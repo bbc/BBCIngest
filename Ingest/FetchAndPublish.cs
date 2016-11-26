@@ -64,14 +64,22 @@ namespace BBCIngest
             }
         }
 
-        public async Task main()
+        public async Task republish()
         {
             DateTime current = schedule.current(DateTime.UtcNow);
-            DateTime next = schedule.next(DateTime.UtcNow);
-            // on startup make sure we have the latest edition
-            await fetcher.reFetchIfNeeded(current);
+            await republish(current);
+        }
+
+        public async Task republish(DateTime epoch)
+        {
+            await fetcher.reFetchIfNeeded(epoch);
             // (re-)publish it
-            publisher.publish(fetcher.latest(), current);
+            publisher.publish(fetcher.latest(), epoch);
+        }
+
+        public async Task main()
+        {
+            await republish();
             await Task.Delay(4000); // let the user see the message
             while (true)
             {
