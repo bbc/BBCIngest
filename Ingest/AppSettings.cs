@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Xml.Serialization;
+using static System.Environment;
 
 namespace BBCIngest
 {
@@ -10,6 +11,13 @@ namespace BBCIngest
     {
         public bool appSettingsChanged;
         private string defaultDir;
+        private string settingsPath = GetFolderPath(SpecialFolder.LocalApplicationData);
+        private event FetchMessageDelegate fetchMessage;
+
+        public void addMessageListener(FetchMessageDelegate fm)
+        {
+            this.fetchMessage += fm;
+        }
 
         private string archive;
         public string Archive
@@ -135,7 +143,6 @@ namespace BBCIngest
 
         public bool LoadAppSettings()
         {
-            string settingsPath = System.Windows.Forms.Application.LocalUserAppDataPath;
             XmlSerializer sz = null;
             FileStream fs = null;
             bool fileExists = false;
@@ -181,7 +188,7 @@ namespace BBCIngest
             }
             catch(Exception ex)
             {
-                System.Windows.Forms.MessageBox.Show(ex.Message);
+                fetchMessage(ex.Message);
             }
             finally
             {
@@ -203,7 +210,7 @@ namespace BBCIngest
             if (this.appSettingsChanged)
             {
                 XmlSerializer sz = new XmlSerializer(typeof(AppSettings));
-                StreamWriter sw = new StreamWriter(System.Windows.Forms.Application.LocalUserAppDataPath + @"\BBCIngest.config", false);
+                StreamWriter sw = new StreamWriter(settingsPath + @"\BBCIngest.config", false);
                 if (sw != null)
                 {
                     sz.Serialize(sw, this);

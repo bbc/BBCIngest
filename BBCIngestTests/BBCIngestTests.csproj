@@ -55,9 +55,9 @@
     <Compile Include="ScheduleTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BBCIngest\BBCIngest.csproj">
-      <Project>{F31DC75A-F201-4E0A-9EEB-F4708BFDBC92}</Project>
-      <Name>BBCIngest</Name>
+    <ProjectReference Include="..\Ingest\Ingest.csproj">
+      <Project>{3c26f861-47b4-4cd6-aeb3-696fe8f38af2}</Project>
+      <Name>Ingest</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

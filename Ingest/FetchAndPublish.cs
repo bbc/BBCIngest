@@ -9,7 +9,7 @@ namespace BBCIngest
     public delegate void NewEditionDelegate(string s);
     public delegate void FetchMessageDelegate(string s);
 
-    class FetchAndPublish
+    public class FetchAndPublish
     {
         private event FetchMessageDelegate fetchMessage;
 
@@ -40,6 +40,7 @@ namespace BBCIngest
             this.fetchMessage += fm;
             publisher.addMessageListener(fm);
             fetcher.addMessageListener(fm);
+            conf.addMessageListener(fm); // so exceptions in the AppSettings can be reported
         }
 
         public void addEditionListener(NewEditionDelegate ne)
@@ -47,7 +48,7 @@ namespace BBCIngest
             fetcher.addEditionListener(ne);
         }
 
-        internal void ChangeConfig(AppSettings conf)
+        public void ChangeConfig(AppSettings conf)
         {
             this.conf = conf;
             log.WriteLine("new config");
@@ -76,7 +77,7 @@ namespace BBCIngest
             {
                 try
                 {
-                    DateTime bc = await fetchAndPublish();
+                    DateTime bc = await fetchAndPublish(DateTime.UtcNow);
                     await Task.Delay(4000); // let the user see the message
                     // wait until after broadcast date before trying for next edition
                     await waitUntil(bc);
@@ -92,19 +93,18 @@ namespace BBCIngest
             }
         }
 
-        public async Task<DateTime> fetchAndPublish()
+        public async Task<DateTime> fetchAndPublish(DateTime epoch)
         {
-            DateTime now = DateTime.UtcNow;
             DateTime? lmd = null;
-            DateTime t = schedule.current(now);
+            DateTime t = schedule.current(epoch);
             DateTime bc = t.AddMinutes(conf.BroadcastMinuteAfter);
-            if (now < bc) // check if we have time to publish a late file
+            if (epoch < bc) // check if we have time to publish a late file
             {
                 await fetcher.reFetchIfNeeded(t);
             }
             else  // no we don't
             {
-                t = schedule.next(now);
+                t = schedule.next(epoch);
                 // wait until a few minutes before publication
                 await waitUntil(t.AddMinutes(0 - conf.MinutesBefore));
                 await fetcher.reFetchIfNeeded(t);
