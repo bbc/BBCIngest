@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BBCIngest
 {
-    class Schedule
+    public class Schedule
     {
         private AppSettings conf;
 
@@ -118,14 +114,8 @@ namespace BBCIngest
         internal DateTime previous()
         {
             DateTime t = DateTime.UtcNow;
-            /*
-            if (conf.Hourpattern == "*" && conf.Minutepattern == "00,30")
-            {
-                return previous30(t);
-            }
-            */
             DateTime[] all = events(today());
-            for (int i=all.Length-1; i>0; i--)
+            for (int i=all.Length-1; i>=0; i--)
             {
                 DateTime ev = all[i];
                 if (ev < t)
@@ -139,24 +129,6 @@ namespace BBCIngest
                 return all[all.Length-1];
             }
             throw new Exception("no events");
-        }
-
-        internal DateTime next30(DateTime t)
-        {
-            if (t.Minute < 30)
-            {
-                return new DateTime(t.Year, t.Month, t.Day, t.Hour, 30, 0);
-            }
-            else
-            {
-                t = t.AddMinutes(30);
-                return new DateTime(t.Year, t.Month, t.Day, t.Hour, 00, 0);
-            }
-        }
-
-        internal DateTime previous30(DateTime t)
-        {
-            return new DateTime(t.Year, t.Month, t.Day, t.Hour, (t.Minute < 30) ? 0 : 30, 0);
         }
     }
 }
