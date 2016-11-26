@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "BBCIngest"
-#define MyAppVersion GetStringFileInfo("C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\BBCIngest.exe", "ProductVersion")
+#define MyAppVersion GetStringFileInfo(".\bin\Release\BBCIngest.exe", "ProductVersion")
 #define MyAppPublisher "BBC World Service"
 #define MyAppURL "http://www.bbc.com/worldserviceradio"
 #define MyAppExeName "BBCIngest.exe"
@@ -32,24 +32,24 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\BBCIngest.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\BBCIngest.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\BBCIngest.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\BBCIngest.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\Nito.AsyncEx.Concurrent.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\Nito.AsyncEx.Concurrent.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\Nito.AsyncEx.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\Nito.AsyncEx.Enlightenment.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\Nito.AsyncEx.Enlightenment.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\Nito.AsyncEx.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\policy.2.0.taglib-sharp.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\policy.2.0.taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\System.Net.Http.Extensions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\System.Net.Http.Extensions.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\System.Net.Http.Primitives.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\System.Net.Http.Primitives.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\BBCIngest\bin\Release\taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Documents\Visual Studio 2015\Projects\BBCIngest\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\BBCIngest.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\BBCIngest.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\BBCIngest.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\BBCIngest.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Nito.AsyncEx.Concurrent.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Nito.AsyncEx.Concurrent.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Nito.AsyncEx.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Nito.AsyncEx.Enlightenment.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Nito.AsyncEx.Enlightenment.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Nito.AsyncEx.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\policy.2.0.taglib-sharp.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\policy.2.0.taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\System.Net.Http.Extensions.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\System.Net.Http.Extensions.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\System.Net.Http.Primitives.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\System.Net.Http.Primitives.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
