@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Net.Http;
-using System.Net;
 using System.IO;
 
 namespace BBCIngest
@@ -13,6 +12,7 @@ namespace BBCIngest
         string Prefix { get; set; }
         string Webdate { get; set; }
         string Suffix { get; set; }
+        string dateTimeToString(string format, DateTime epoch);
     }
 
     class Fetch
@@ -46,12 +46,7 @@ namespace BBCIngest
 
         public string webname(DateTime t)
         {
-            string s = conf.Basename;
-            if (conf.Webdate != "")
-            {
-                s += t.ToString(conf.Webdate);
-            }
-            return s + "." + conf.Suffix;
+            return conf.Basename + conf.dateTimeToString(conf.Webdate, t) + "." + conf.Suffix;
         }
 
         private string url(DateTime epoch)
@@ -135,11 +130,13 @@ namespace BBCIngest
         public DateTime latestPublishTime(FileInfo f)
         {
             DateTime dt = f.LastWriteTimeUtc;
-            if (conf.Suffix == "mp3")
+            if (f.Extension == ".mp3")
             {
                 TagLib.File tf = TagLib.File.Create(f.FullName);
-                string s = tf.Tag.Comment.Replace("UTC", "GMT");
-                dt = DateTime.Parse(s);
+                string s = tf.Tag.Comment;
+                if (s != null) {
+                    dt = DateTime.Parse(s.Replace("UTC", "GMT"));
+                }
                 tf.Dispose();
             }
             return dt;

@@ -223,5 +223,18 @@ namespace BBCIngest
             }
             return p + Path.DirectorySeparatorChar;
         }
+
+        public string dateTimeToString(string format, DateTime t)
+        {
+            if (format == "")
+                return "";
+            if (format == "$") // custom format for unix timestamp
+            {
+                DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                TimeSpan o = t.Subtract(epoch);
+                return o.TotalSeconds.ToString();
+            }
+            return t.ToString(format);
+        }
     }
 }
