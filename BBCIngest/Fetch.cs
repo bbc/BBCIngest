@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net;
 using System.IO;
-using System.Windows.Forms;
-using System.Threading;
 
 namespace BBCIngest
 {
@@ -155,7 +153,7 @@ namespace BBCIngest
         public async Task republish(DateTime t)
         {
             mainForm.setLine1("creating ingest using latest edition");
-            DateTime prev = schedule.previous();
+            DateTime prev = schedule.current(DateTime.UtcNow);
             DateTime? lmd = await editionAvailable(prev);
             if (lmd == null)
             {
@@ -209,22 +207,23 @@ namespace BBCIngest
             hc = new HttpClient(httpClientHandler);
             log = new Logging(conf, hc);
             schedule = new Schedule(conf);
-            await republish(schedule.next());
+            await republish(schedule.next(DateTime.UtcNow));
             await Task.Delay(4000); // let the user see the message
             while (true)
             {
                 try
                 {
+                    DateTime now = DateTime.UtcNow;
                     DateTime? lmd = null;
-                    DateTime t = schedule.previous();
+                    DateTime t = schedule.current(now);
                     DateTime bc = t.AddMinutes(conf.BroadcastMinuteAfter);
-                    if (DateTime.UtcNow < bc) // check if we have time to publish a late file
+                    if (now < bc) // check if we have time to publish a late file
                     {
                         await republish(t);
                     }
                     else  // no we don't
                     {
-                        t = schedule.next();
+                        t = schedule.next(now);
                         // wait until a few minutes before publication
                         await waitnear(t);
                         await republish(t);

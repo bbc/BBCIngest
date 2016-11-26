@@ -50,23 +50,22 @@ namespace BBCIngest
             }
             return h;
         }
-
-        private DateTime today()
+/*
+        private DateTime today(DateTime t)
         {
-            DateTime t = DateTime.UtcNow;
-            return new DateTime(t.Year, t.Month, t.Day, 0, 0, 0);
+            return t.Date;
         }
 
-        private DateTime yesterday()
+        private DateTime yesterday(DateTime t)
         {
-            return today().AddDays(-1);
+            return t.Date.AddDays(-1);
         }
 
-        private DateTime tomorrow()
+        private DateTime tomorrow(DateTime t)
         {
-            return today().AddDays(1);
+            return t.Date.AddDays(1);
         }
-
+        */
         private DateTime[] events(DateTime start)
         {
             int[] hours = this.hours();
@@ -85,16 +84,10 @@ namespace BBCIngest
             return d;
         }
 
-        internal DateTime next()
+        public DateTime next(DateTime t)
         {
-            DateTime t = DateTime.UtcNow;
-            /*
-            if (conf.Hourpattern=="*" && conf.Minutepattern=="00,30")
-            {
-                return next30(t);
-            }
-            */
-            DateTime[] all = events(today());
+            DateTime today = t.Date;
+            DateTime[] all = events(today);
             for(int i=0; i<all.Length; i++)
             {
                 DateTime ev = all[i];
@@ -103,7 +96,8 @@ namespace BBCIngest
                     return ev;
                 }
             }
-            all = events(tomorrow());
+            // it might be tomorrow
+            all = events(today.AddDays(1));
             if(all.Length>0)
             {
                 return all[0];
@@ -111,10 +105,10 @@ namespace BBCIngest
             throw new Exception("no events");
         }
 
-        internal DateTime previous()
+        public DateTime current(DateTime t)
         {
-            DateTime t = DateTime.UtcNow;
-            DateTime[] all = events(today());
+            DateTime today = t.Date;
+            DateTime[] all = events(today);
             for (int i=all.Length-1; i>=0; i--)
             {
                 DateTime ev = all[i];
@@ -123,7 +117,8 @@ namespace BBCIngest
                     return ev;
                 }
             }
-            all = events(yesterday());
+            // it might be yesterday
+            all = events(today.AddDays(-1));
             if (all.Length > 0)
             {
                 return all[all.Length-1];
