@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBCIngestTests", "BBCIngest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ingest", "Ingest\Ingest.csproj", "{3C26F861-47B4-4CD6-AEB3-696FE8F38AF2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBCIngestOne", "BBCIngestOne\BBCIngestOne.csproj", "{46B964A8-1BDC-4D17-8A09-91E4871A5FDB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{3C26F861-47B4-4CD6-AEB3-696FE8F38AF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C26F861-47B4-4CD6-AEB3-696FE8F38AF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C26F861-47B4-4CD6-AEB3-696FE8F38AF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46B964A8-1BDC-4D17-8A09-91E4871A5FDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46B964A8-1BDC-4D17-8A09-91E4871A5FDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46B964A8-1BDC-4D17-8A09-91E4871A5FDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46B964A8-1BDC-4D17-8A09-91E4871A5FDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
