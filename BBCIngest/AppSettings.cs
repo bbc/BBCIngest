@@ -6,7 +6,7 @@ using System.Xml.Serialization;
 
 namespace BBCIngest
 {
-    public class AppSettings
+    public class AppSettings : IPublishSettings, IFetchSettings
     {
         public bool appSettingsChanged;
         private string defaultDir;
@@ -126,33 +126,6 @@ namespace BBCIngest
                     w = l;
             }
             return w;
-        }
-
-        public string webname(DateTime t)
-        {
-            return Basename + t.ToString(Webdate) + "." + Suffix;
-        }
-
-        public string discname(DateTime t)
-        {
-            string s = "";
-            if (Discdate != "") // allow empty Discdate to force fixed discname
-            {
-                if (UseLocaltime)
-                {
-                    s = t.ToLocalTime().ToString(Discdate);
-                }
-                else
-                {
-                    s = t.ToString(Discdate);
-                }
-            }
-            return Basename + s + "." + Suffix;
-        }
-
-        public string latest()
-        {
-            return Archive + Basename + "." + Suffix;
         }
 
         public AppSettings ShallowCopy()

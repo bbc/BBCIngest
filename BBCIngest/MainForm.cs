@@ -6,7 +6,7 @@ namespace BBCIngest
 {
     public partial class MainForm : Form
     {
-        private Fetch fetcher = null;
+        private FetchAndPublish fetcher = null;
         private AppSettings conf;
 
         public MainForm()
@@ -21,7 +21,7 @@ namespace BBCIngest
             Directory.CreateDirectory(conf.Publish);
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
-            fetcher = new Fetch(conf);
+            fetcher = new FetchAndPublish(conf);
             fetcher.addMessageListener(new FetchMessageDelegate(setLine1));
             fetcher.addEditionListener(new NewEditionDelegate(setLine2));
             await fetcher.main();
