@@ -6,25 +6,37 @@ using System.IO;
 
 namespace BBCIngest
 {
+    public delegate void NewEditionDelegate(string s);
+    public delegate void FetchMessageDelegate(string s);
+
     class Fetch
     {
+        private event NewEditionDelegate newEdition;
+        private event FetchMessageDelegate fetchMessage;
         private AppSettings conf;
         private Logging log;
         private Schedule schedule;
-        private MainForm mainForm;
         private HttpClient hc;
 
-        public Fetch(MainForm mainForm, AppSettings conf)
+        public Fetch(AppSettings conf)
         {
-            this.mainForm = mainForm;
             this.conf = conf;
+        }
+
+        public void addEditionListener(NewEditionDelegate ne)
+        {
+            this.newEdition += ne;
+        }
+
+        public void addMessageListener(FetchMessageDelegate fm)
+        {
+            this.fetchMessage += fm;
         }
 
         internal void ChangeConfig(AppSettings conf)
         {
             this.conf = conf;
             log.WriteLine("new config");
-            //tokenSource.Cancel();
         }
 
         private async Task waitnear(DateTime t)
@@ -33,7 +45,7 @@ namespace BBCIngest
             int d = (int)pub.Subtract(DateTime.UtcNow).TotalMilliseconds;
             if (d > 0)
             {
-                mainForm.setLine1("waiting until " + pub.ToString("t"));
+                fetchMessage("waiting until " + pub.ToString("t"));
                 await Task.Delay(d);
             }
         }
@@ -76,7 +88,7 @@ namespace BBCIngest
                 {
                     return lmd;
                 }
-                mainForm.setLine1("Waiting for " + t.ToString("HH:mm") + " edition at " + DateTime.UtcNow.ToString("HH:mm:ss"));
+                fetchMessage("Waiting for " + t.ToString("HH:mm") + " edition at " + DateTime.UtcNow.ToString("HH:mm:ss"));
                 await Task.Delay(10 * 1000);
             }
             while (DateTime.UtcNow < end);
@@ -105,6 +117,7 @@ namespace BBCIngest
                 f.CreationTimeUtc = lm;
                 f.LastWriteTimeUtc = lm;
             }
+            newEdition("Latest is " + latestPublishTime(f));
         }
 
         private DateTime latestPublishTime(FileInfo f)
@@ -127,7 +140,6 @@ namespace BBCIngest
             {
                 return;
             }
-            mainForm.setLine2("Latest is " + latestPublishTime(f));
             string savename = conf.Publish + conf.discname(t);
             if (conf.SafePublishing)
             {
@@ -141,7 +153,7 @@ namespace BBCIngest
                 }
                 catch
                 {
-                    mainForm.setLine1("error writing to " + conf.Publish + " folder");
+                    fetchMessage("error writing to " + conf.Publish + " folder");
                 }
             }
             else
@@ -152,22 +164,33 @@ namespace BBCIngest
 
         public async Task republish(DateTime t)
         {
-            mainForm.setLine1("creating ingest using latest edition");
             DateTime prev = schedule.current(DateTime.UtcNow);
             DateTime? lmd = await editionAvailable(prev);
-            if (lmd == null)
+            fetchMessage("creating ingest using latest edition");
+            FileInfo f = new FileInfo(conf.latest());
+            if(f.Exists)
             {
-                mainForm.setLine2("no file yet");
+                if((lmd != null) && (lmd.Value <= f.LastWriteTimeUtc))
+                {
+                    newEdition("Latest is " + latestPublishTime(f));
+                }
+                else
+                {
+                    await save(prev); // newer file available
+                }
             }
             else
             {
-                FileInfo f = new FileInfo(conf.latest());
-                if (f.Exists == false || f.LastWriteTimeUtc < lmd)
+                if (lmd == null)
+                {
+                    newEdition("no file yet");
+                }
+                else
                 {
                     await save(prev);
                 }
-                publish(t);
             }
+            publish(t);
         }
 
         private void badMessage(DateTime t)
@@ -184,7 +207,7 @@ namespace BBCIngest
             {
                 logmessage = "no usable file";
             }
-            mainForm.setLine1(logmessage);
+            fetchMessage(logmessage);
             log.WriteLine(logmessage);
         }
 
@@ -192,7 +215,7 @@ namespace BBCIngest
         {
             string message = t.ToString("HH:mm") + " edition"
                 + " published at " + lmd;
-            mainForm.setLine1(message);
+            fetchMessage(message);
             string logmessage = message + " and downloaded at " + before.ToString("HH:mm:ss")
                 + " in " + Math.Round(after.Subtract(before).TotalSeconds, 2) + "s";
             log.WriteLine(logmessage);
@@ -247,13 +270,13 @@ namespace BBCIngest
                     int d = (int)bc.Subtract(DateTime.UtcNow).TotalMilliseconds;
                     if (d > 0)
                     {
-                        mainForm.setLine1("waiting until " + bc.ToString("t"));
+                        fetchMessage("waiting until " + bc.ToString("t"));
                         await Task.Delay(d);
                     }
                 }
                 catch (HttpRequestException ex)
                 {
-                    mainForm.setLine1(ex.Message);
+                    fetchMessage(ex.Message);
                     log.WriteLine(ex.Message);
                 }
             }

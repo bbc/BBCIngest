@@ -21,7 +21,9 @@ namespace BBCIngest
             Directory.CreateDirectory(conf.Publish);
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
-            fetcher = new Fetch(this, conf);
+            fetcher = new Fetch(conf);
+            fetcher.addMessageListener(new FetchMessageDelegate(setLine1));
+            fetcher.addEditionListener(new NewEditionDelegate(setLine2));
             await fetcher.main();
         }
 
