@@ -18,6 +18,7 @@ namespace BBCIngest
         {
             conf = new AppSettings();
             conf.LoadAppSettings();
+            conf.SaveAppSettings();
             Directory.CreateDirectory(conf.Publish);
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
