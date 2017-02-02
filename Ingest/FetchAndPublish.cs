@@ -74,30 +74,25 @@ namespace BBCIngest
         {
             await fetcher.reFetchIfNeeded(epoch);
             // (re-)publish it
-            publisher.publish(fetcher.latest(), epoch);
+            publisher.publish(fetcher.lastWeHave(), epoch);
         }
 
-        public async Task main()
+        public async Task fetchOnce()
         {
-            await republish();
-            await Task.Delay(4000); // let the user see the message
-            while (true)
+            try
             {
-                try
-                {
-                    DateTime bc = await fetchAndPublish(DateTime.UtcNow);
-                    await Task.Delay(4000); // let the user see the message
-                    // wait until after broadcast date before trying for next edition
-                    await waitUntil(bc);
-                }
-                catch (Exception ex)
-                {
-                    fetchMessage(ex.Message);
-                    log.WriteLine(ex.Message);
-                    // best delete the current file so we will fetch another
-                    FileInfo f = new FileInfo(fetcher.latest());
-                    f.Delete();
-                }
+                DateTime bc = await fetchAndPublish(DateTime.UtcNow);
+                await Task.Delay(4000); // let the user see the message
+                // wait until after broadcast date before trying for next edition
+                await waitUntil(bc);
+            }
+            catch (Exception ex)
+            {
+                fetchMessage(ex.Message);
+                log.WriteLine(ex.Message);
+                // best delete the current file so we will fetch another
+                FileInfo f = new FileInfo(fetcher.lastWeHave());
+                f.Delete();
             }
         }
 
@@ -119,7 +114,7 @@ namespace BBCIngest
                 bc = t.AddMinutes(conf.BroadcastMinuteAfter);
             }
             // publish most recent as the next edition in case we can't get the next one
-            publisher.publish(fetcher.latest(), t);
+            publisher.publish(fetcher.lastWeHave(), t);
             lmd = await fetcher.waitfor(t, bc);
             if (lmd == null)
             {
@@ -129,16 +124,26 @@ namespace BBCIngest
             {
                 DateTime before = DateTime.UtcNow;
                 await fetcher.save(t);
-                publisher.publish(fetcher.latest(), t);
+                publisher.publish(fetcher.lastWeHave(), t);
                 fetchMessage(t.ToString("HH:mm") + " edition published at " + lmd);
             }
             return bc;
         }
 
+        public void publishAll()
+        {
+            DateTime[] all = schedule.events(DateTime.UtcNow.Date);
+            string path = fetcher.lastWeHave();
+            foreach(DateTime t in all)
+            {
+                publisher.publish(path, t);
+            }
+        }
+
         private void badMessage(DateTime t)
         {
             string message = "";
-            FileInfo f = new FileInfo(fetcher.latest());
+            FileInfo f = new FileInfo(fetcher.lastWeHave());
             if (f.Exists)
             {
                 DateTime lmd = fetcher.latestPublishTime(f);

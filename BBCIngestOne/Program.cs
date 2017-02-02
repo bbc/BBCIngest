@@ -9,10 +9,10 @@ namespace BBCIngestOne
     {
         static void Main(string[] args)
         {
-            Main().Wait();
+            MainTask().Wait();
         }
 
-        static async Task Main()
+        static async Task MainTask()
         {
             AppSettings conf = new AppSettings();
             conf.LoadAppSettings();

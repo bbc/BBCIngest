@@ -54,7 +54,7 @@ namespace BBCIngest
             return conf.Prefix + webname(epoch);
         }
 
-        public string latest()
+        public string lastWeHave()
         {
             return conf.Archive + conf.Basename + "." + conf.Suffix;
         }
@@ -107,7 +107,7 @@ namespace BBCIngest
             await m.Content.CopyToAsync(ds);
             ds.Dispose();
             FileInfo f = new FileInfo(tmpname);
-            string savename = latest();
+            string savename = lastWeHave();
             System.IO.File.Delete(savename);
             f.MoveTo(savename);
             DateTime after = DateTime.UtcNow;
@@ -144,12 +144,12 @@ namespace BBCIngest
 
         public async Task reFetchIfNeeded(DateTime epoch)
         {
-            DateTime? lmd = await editionAvailable(epoch);
+            DateTime? newest = await editionAvailable(epoch);
             fetchMessage("creating ingest using latest edition");
-            FileInfo f = new FileInfo(latest());
+            FileInfo f = new FileInfo(lastWeHave());
             if(f.Exists)
             {
-                if((lmd != null) && (lmd.Value <= f.LastWriteTimeUtc))
+                if((newest != null) && (newest.Value > f.LastWriteTimeUtc))
                 {
                     await save(epoch); // newer file available
                 }
@@ -160,7 +160,7 @@ namespace BBCIngest
             }
             else
             {
-                if (lmd == null)
+                if (newest == null)
                 {
                     newEdition("no file yet");
                 }

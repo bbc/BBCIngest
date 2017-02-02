@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32.TaskScheduler;
+using System;
 using System.IO;
 using System.Windows.Forms;
 
@@ -8,24 +9,20 @@ namespace BBCIngest
     {
         private FetchAndPublish fetcher = null;
         private AppSettings conf;
+        private Schedule schedule = null;
 
-        public MainForm()
+        public MainForm(AppSettings conf, FetchAndPublish fetcher)
         {
+            this.conf = conf;
+            this.fetcher = fetcher;
             InitializeComponent();
         }
 
-        private async void OnLoad(object sender, EventArgs e)
+        private void OnLoad(object sender, EventArgs e)
         {
-            conf = new AppSettings();
-            conf.LoadAppSettings();
-            conf.SaveAppSettings();
-            Directory.CreateDirectory(conf.Publish);
-            Directory.CreateDirectory(conf.Archive);
-            Directory.CreateDirectory(conf.Logfolder);
-            fetcher = new FetchAndPublish(conf);
+            schedule = new Schedule(conf);
             fetcher.addMessageListener(new FetchMessageDelegate(setLine1));
             fetcher.addEditionListener(new NewEditionDelegate(setLine2));
-            await fetcher.main();
         }
 
         public void setLine1(string s)
@@ -38,7 +35,7 @@ namespace BBCIngest
             label2.Text = s;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonSettings_Click(object sender, EventArgs e)
         {
             SettingsForm sf = new SettingsForm();
             sf.AppSettings = conf.ShallowCopy();
@@ -50,6 +47,22 @@ namespace BBCIngest
                 fetcher.ChangeConfig(conf);
             }
             sf.Dispose();
+        }
+
+        private void buttonRfTS_Click(object sender, EventArgs e)
+        {
+            string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            schedule.deleteTaskAndTriggers();
+            schedule.createTaskAndTriggers(path);
+        }
+
+        private async void buttonStart_Click(object sender, EventArgs e)
+        {
+            await fetcher.republish();
+            while(true)
+            {
+                await fetcher.fetchOnce();
+            }            
         }
     }
 }

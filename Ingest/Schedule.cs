@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32.TaskScheduler;
+using System;
 
 namespace BBCIngest
 {
@@ -50,23 +51,72 @@ namespace BBCIngest
             }
             return h;
         }
-/*
-        private DateTime today(DateTime t)
+
+        public void createTaskAndTriggers(String execPath)
         {
-            return t.Date;
+            using (TaskService ts = new TaskService())
+            {
+                // Create a new task definition and assign properties
+                TaskDefinition td = ts.NewTask();
+                td.RegistrationInfo.Description = "Run BBCIngest";
+
+                td.Principal.LogonType = TaskLogonType.InteractiveToken;
+                int[] minutes = this.minutes();
+                if (conf.Hourpattern == "*")
+                {
+                    // one trigger for each specified minute repeating each hour
+                    for (int m = 0; m < minutes.Length; m++)
+                    {
+                        TimeTrigger dt = new TimeTrigger();
+                        dt.StartBoundary = DateTime.UtcNow.Date
+                            .AddMinutes(minutes[m])
+                            .AddMinutes(-conf.MinutesBefore);
+                        dt.Repetition.Interval = TimeSpan.FromHours(1);
+                        td.Triggers.Add(dt);
+                    }
+                }
+                else {
+                    // one trigger for each specified minute/hour combination, repeating daily
+                    string[] s = conf.Hourpattern.Split(',');
+                    for (int i = 0; i < s.Length; i++)
+                    {
+                        int h;
+                        if (int.TryParse(s[i], out h))
+                        {
+                            for (int m = 0; m < minutes.Length; m++)
+                            {
+                                DailyTrigger dt = new DailyTrigger();
+                                dt.StartBoundary = DateTime.UtcNow.Date
+                                    .AddHours(h)
+                                    .AddMinutes(minutes[m])
+                                    .AddMinutes(-conf.MinutesBefore);
+                                td.Triggers.Add(dt);
+                            }
+                        }
+                    }
+                }
+
+                // Add an action that will launch BBCIngest whenever the trigger fires
+                td.Actions.Add(new ExecAction(execPath, "once", null));
+
+                // Register the task in the root folder
+                const string taskName = "BBCIngest";
+                ts.RootFolder.RegisterTaskDefinition(taskName, td);
+            }
         }
 
-        private DateTime yesterday(DateTime t)
+        public void deleteTaskAndTriggers()
         {
-            return t.Date.AddDays(-1);
+            using (TaskService ts = new TaskService())
+            {
+                if (ts.GetTask("BBCIngest") != null)
+                {
+                    ts.RootFolder.DeleteTask("BBCIngest");
+                }
+            }
         }
 
-        private DateTime tomorrow(DateTime t)
-        {
-            return t.Date.AddDays(1);
-        }
-        */
-        private DateTime[] events(DateTime start)
+        public DateTime[] events(DateTime start)
         {
             int[] hours = this.hours();
             int[] minutes = this.minutes();
