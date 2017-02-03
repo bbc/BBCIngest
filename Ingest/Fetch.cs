@@ -17,7 +17,8 @@ namespace BBCIngest
 
     class Fetch
     {
-        private event FetchMessageDelegate fetchMessage;
+        private event TerseMessageDelegate terseMessage;
+        private event ChattyMessageDelegate chattyMessage;
         private event NewEditionDelegate newEdition;
         private event LogDelegate logger;
         private IFetchSettings conf;
@@ -29,9 +30,14 @@ namespace BBCIngest
             this.hc = hc;
         }
 
-        public void addMessageListener(FetchMessageDelegate fm)
+        public void addTerseMessageListener(TerseMessageDelegate fm)
         {
-            this.fetchMessage += fm;
+            this.terseMessage += fm;
+        }
+
+        public void addChattyMessageListener(ChattyMessageDelegate fm)
+        {
+            this.chattyMessage += fm;
         }
 
         public void addEditionListener(NewEditionDelegate ne)
@@ -91,7 +97,7 @@ namespace BBCIngest
                 {
                     return lmd;
                 }
-                fetchMessage("Waiting for " + t.ToString("HH:mm") + " edition at " + DateTime.UtcNow.ToString("HH:mm:ss"));
+                chattyMessage("Waiting for " + t.ToString("HH:mm") + " edition at " + DateTime.UtcNow.ToString("HH:mm:ss"));
                 await Task.Delay(10 * 1000);
             }
             while (DateTime.UtcNow < end);
@@ -145,7 +151,7 @@ namespace BBCIngest
         public async Task reFetchIfNeeded(DateTime epoch)
         {
             DateTime? newest = await editionAvailable(epoch);
-            fetchMessage("creating ingest using latest edition");
+            terseMessage("creating ingest using latest edition");
             FileInfo f = new FileInfo(lastWeHave());
             if(f.Exists)
             {

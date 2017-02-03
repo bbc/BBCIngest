@@ -21,7 +21,8 @@ namespace BBCIngest
         private void OnLoad(object sender, EventArgs e)
         {
             schedule = new Schedule(conf);
-            fetcher.addMessageListener(new FetchMessageDelegate(setLine1));
+            fetcher.addTerseMessageListener(new TerseMessageDelegate(setLine1));
+            fetcher.addChattyMessageListener(new ChattyMessageDelegate(setLine1));
             fetcher.addEditionListener(new NewEditionDelegate(setLine2));
         }
 
@@ -54,6 +55,7 @@ namespace BBCIngest
             string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             schedule.deleteTaskAndTriggers();
             schedule.createTaskAndTriggers(path);
+            schedule.runTask();
         }
 
         private async void buttonStart_Click(object sender, EventArgs e)
@@ -61,7 +63,9 @@ namespace BBCIngest
             await fetcher.republish();
             while(true)
             {
-                await fetcher.fetchOnce();
+                DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);
+                // wait until after broadcast date before trying for next edition
+                await fetcher.waitUntil(bc);
             }            
         }
     }

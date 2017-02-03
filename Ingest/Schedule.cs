@@ -105,6 +105,18 @@ namespace BBCIngest
             }
         }
 
+        public void runTask()
+        {
+            using (TaskService ts = new TaskService())
+            {
+                Task t = ts.GetTask("BBCIngest");
+                if(t!= null)
+                {
+                    t.Run();
+                }
+            }
+        }
+
         public void deleteTaskAndTriggers()
         {
             using (TaskService ts = new TaskService())

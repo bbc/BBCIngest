@@ -12,11 +12,11 @@ namespace BBCIngest
         public bool appSettingsChanged;
         private string defaultDir;
         private string settingsPath = GetFolderPath(SpecialFolder.LocalApplicationData);
-        private event FetchMessageDelegate fetchMessage;
+        private event TerseMessageDelegate terseMessage;
 
-        public void addMessageListener(FetchMessageDelegate fm)
+        public void addTerseMessageListener(TerseMessageDelegate m)
         {
-            this.fetchMessage += fm;
+            this.terseMessage += m;
         }
 
         private string archive;
@@ -188,7 +188,7 @@ namespace BBCIngest
             }
             catch(Exception ex)
             {
-                fetchMessage(ex.Message);
+                terseMessage(ex.Message);
             }
             finally
             {

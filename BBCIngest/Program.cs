@@ -39,8 +39,9 @@ namespace BBCIngest
 
         static async Task MainTask(FetchAndPublish fetcher)
         {
+            TrayNotify notify = new TrayNotify(fetcher);
             await fetcher.republish();
-            await fetcher.fetchOnce();
+            DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace BBCIngest
 
     class Publish
     {
-        private event FetchMessageDelegate fetchMessage;
+        private event TerseMessageDelegate terseMessage;
         private IPublishSettings conf;
 
         public Publish(IPublishSettings conf)
@@ -23,9 +23,9 @@ namespace BBCIngest
             this.conf = conf;
         }
 
-        public void addMessageListener(FetchMessageDelegate fm)
+        public void addTerseMessageListener(TerseMessageDelegate m)
         {
-            this.fetchMessage += fm;
+            this.terseMessage += m;
         }
 
         public string discname(DateTime t)
@@ -65,7 +65,7 @@ namespace BBCIngest
                 }
                 catch
                 {
-                    fetchMessage("error writing to " + conf.Publish + " folder");
+                    terseMessage("error writing to " + conf.Publish + " folder");
                 }
             }
             else
@@ -73,5 +73,6 @@ namespace BBCIngest
                 f.CopyTo(savename, true);
             }
         }
+
     }
 }
