@@ -110,9 +110,15 @@ namespace BBCIngest
                 }
                 else
                 {
-                    DateTime before = DateTime.UtcNow;
                     await fetcher.save(t);
-                    publisher.publish(fetcher.lastWeHave(), t);
+                    if(conf.UpdateAllEditions)
+                    {
+                        publishAll(fetcher.lastWeHave());
+                    }
+                    else
+                    {
+                        publisher.publish(fetcher.lastWeHave(), t);
+                    }
                     terseMessage(t.ToString("HH:mm") + " edition published at " + lmd);
                 }
             }
@@ -127,10 +133,9 @@ namespace BBCIngest
             return bc;
         }
 
-        public void publishAll()
+        public void publishAll(string path)
         {
             DateTime[] all = schedule.events(DateTime.UtcNow.Date);
-            string path = fetcher.lastWeHave();
             foreach(DateTime t in all)
             {
                 publisher.publish(path, t);

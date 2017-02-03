@@ -6,7 +6,7 @@
 #define MyAppPublisher "BBC World Service"
 #define MyAppURL "http://www.bbc.com/worldserviceradio"
 #define MyAppExeName "BBCIngest.exe"
-
+#define Settings "
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
@@ -32,24 +32,19 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: ".\bin\Release\BBCIngest.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\BBCIngest.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\BBCIngest.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\BBCIngest.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\Nito.AsyncEx.Concurrent.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\Nito.AsyncEx.Concurrent.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\Nito.AsyncEx.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\Nito.AsyncEx.Enlightenment.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\Nito.AsyncEx.Enlightenment.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\Nito.AsyncEx.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\policy.2.0.taglib-sharp.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\policy.2.0.taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\System.Net.Http.Extensions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\System.Net.Http.Extensions.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\System.Net.Http.Primitives.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\System.Net.Http.Primitives.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\{#MyAppName}.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\{#MyAppName}.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\{#MyAppName}.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\{#MyAppName}.vshost.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\{#MyAppName}.vshost.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Ingest.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Ingest.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\..\..\AppData\Local\{#MyAppName}.config"; DestDir: "{localappdata}"; Flags: ignoreversion
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -59,3 +54,90 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
+[Code]
+var
+  UserPage  : TWizardPage;
+  PostLogs  : TNewCheckBox;
+  City      : TNewEdit;
+  Station   : TNewEdit;
+
+procedure ButtonOnClick(Sender: TObject);
+begin
+  MsgBox('You clicked the button!', mbInformation, mb_Ok);
+end;
+
+procedure InitializeWizard();
+var
+    flabel : TNewStaticText;
+begin
+  UserPage := CreateCustomPage(wpWelcome, 'Remote Logging', 'Please enter your Station and City');
+
+  flabel := TNewStaticText.Create(UserPage);
+  flabel.Top := ScaleY(12)
+  flabel.Caption := 'Station:';
+  flabel.Parent := UserPage.Surface;
+
+  Station := TNewEdit.Create(UserPage);
+  Station.Top := ScaleY(8);
+  Station.Left := ScaleX(48);
+  Station.Width := UserPage.SurfaceWidth div 2 - ScaleX(8);
+  Station.Text := 'Station';
+  Station.Parent := UserPage.Surface;
+
+  flabel := TNewStaticText.Create(UserPage);
+  flabel.Top := ScaleY(68)
+  flabel.Caption := 'City:';
+  flabel.Parent := UserPage.Surface;
+
+  City := TNewEdit.Create(UserPage);
+  City.Top := ScaleY(64);
+  City.Left := ScaleX(48);
+  City.Width := UserPage.SurfaceWidth div 2 - ScaleX(8);
+  City.Text := 'City';
+  City.Parent := UserPage.Surface;
+      
+  PostLogs := TNewCheckBox.Create(UserPage);
+  PostLogs.Top := ScaleY(128);
+  PostLogs.Width := UserPage.SurfaceWidth div 2;
+  PostLogs.Height := ScaleY(17);
+  PostLogs.Caption := 'Allow Logs to be sent to the BBC';
+  PostLogs.Checked := True;
+  PostLogs.Parent := UserPage.Surface;
+
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  config  : TArrayOfString;
+  path    : String;
+  n       : Integer;
+  i       : Integer;
+  pl      : String;
+begin
+    if  CurStep=ssPostInstall then
+        if PostLogs.Checked then begin
+            pl := 'true';
+        end
+        else begin
+            pl := 'false';
+        end;
+        path := ExpandConstant('{localappdata}');
+        LoadStringsFromFile(path+'\BBCIngest.config', config);
+        n := GetArrayLength(config);
+        if n>0 then begin
+            for i := 0 to n-1 do begin
+                if Pos('<Archive', config[i])>0 then
+                    config[i] := '<Archive>'+path+'</Archive>';
+                if Pos('<Logfolder', config[i])>0 then
+                    config[i] := '<Logfolder>'+path+'</Logfolder>';
+                if Pos('<Station', config[i])>0 then
+                    config[i] := '<Station>'+Station.Text+'</Station>';
+                if Pos('<City', config[i])>0 then
+                    config[i] := '<City>'+City.Text+'</City>';
+                if Pos('<PostLogs', config[i])>0 then
+                    config[i] := '<PostLogs>'+pl+'</PostLogs>';
+            end;
+            SaveStringsToFile(path+'\BBCIngest.config', config, false);
+        end;
+    end;
+end.

@@ -106,6 +106,21 @@ namespace BBCIngest
             }
         }
 
+        private bool updateAllEditions;
+        [CategoryAttribute("Target")]
+        public bool UpdateAllEditions
+        {
+            get
+            {
+                return updateAllEditions;
+            }
+
+            set
+            {
+                updateAllEditions = value;
+            }
+        }
+
         public int ValueWidth()
         {
             int w = 0;

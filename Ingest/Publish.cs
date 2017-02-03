@@ -11,6 +11,7 @@ namespace BBCIngest
         string Discdate { get; set; }
         string Suffix { get; set; }
         bool UseLocaltime { get; set; }
+        bool UpdateAllEditions { get; set; }
     }
 
     class Publish

@@ -51,7 +51,7 @@ namespace BBCIngest
             };
             fetcher.addTerseMessageListener(new TerseMessageDelegate(terse));
             fetcher.addChattyMessageListener(new ChattyMessageDelegate(chatty));
-            fetcher.addEditionListener(new NewEditionDelegate(terse));
+            fetcher.addEditionListener(new NewEditionDelegate(chatty));
         }
 
         public void terse(string s)
