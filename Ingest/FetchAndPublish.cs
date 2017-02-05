@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BBCIngest
 {
-    public delegate void NewEditionDelegate(string s);
+    public delegate void ShowEditionStatusDelegate(string s);
     public delegate void TerseMessageDelegate(string s);
     public delegate void ChattyMessageDelegate(string s);
 
@@ -36,7 +36,7 @@ namespace BBCIngest
             fetcher.addLogListener(new LogDelegate(log.WriteLine));
         }
 
-        public void addTerseMessageListener(TerseMessageDelegate m)
+        public void listenForTerseMessages(TerseMessageDelegate m)
         {
             this.terseMessage += m;
             publisher.addTerseMessageListener(m);
@@ -44,12 +44,12 @@ namespace BBCIngest
             conf.addTerseMessageListener(m); // so exceptions in the AppSettings can be reported
         }
 
-        public void addChattyMessageListener(ChattyMessageDelegate m)
+        public void listenForChattyMessages(ChattyMessageDelegate m)
         {
             fetcher.addChattyMessageListener(m);
         }
 
-        public void addEditionListener(NewEditionDelegate ne)
+        public void listenForEditionStatus(ShowEditionStatusDelegate ne)
         {
             fetcher.addEditionListener(ne);
         }
@@ -79,9 +79,9 @@ namespace BBCIngest
         {
             await fetcher.reFetchIfNeeded(epoch);
             // (re-)publish it
-            publisher.publish(fetcher.lastWeHave(), epoch);
+            publisher.publish(fetcher.lastWeHave(), epoch, schedule.events(epoch.Date));
         }
-         
+
         public async Task<DateTime> fetchAndPublish(DateTime epoch)
         {
             DateTime? lmd = null;
@@ -102,7 +102,7 @@ namespace BBCIngest
                     bc = t.AddMinutes(conf.BroadcastMinuteAfter);
                 }
                 // publish most recent as the next edition in case we can't get the next one
-                publisher.publish(fetcher.lastWeHave(), t);
+                publisher.publish(fetcher.lastWeHave(), t, schedule.events(t.Date));
                 lmd = await fetcher.waitfor(t, bc);
                 if (lmd == null)
                 {
@@ -111,14 +111,7 @@ namespace BBCIngest
                 else
                 {
                     await fetcher.save(t);
-                    if(conf.UpdateAllEditions)
-                    {
-                        publishAll(fetcher.lastWeHave());
-                    }
-                    else
-                    {
-                        publisher.publish(fetcher.lastWeHave(), t);
-                    }
+                    publisher.publish(fetcher.lastWeHave(), t, schedule.events(t.Date));
                     terseMessage(t.ToString("HH:mm") + " edition published at " + lmd);
                 }
             }
@@ -131,15 +124,6 @@ namespace BBCIngest
                 f.Delete();
             }
             return bc;
-        }
-
-        public void publishAll(string path)
-        {
-            DateTime[] all = schedule.events(DateTime.UtcNow.Date);
-            foreach(DateTime t in all)
-            {
-                publisher.publish(path, t);
-            }
         }
 
         private void badMessage(DateTime t)

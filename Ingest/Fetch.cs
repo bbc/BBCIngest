@@ -19,7 +19,7 @@ namespace BBCIngest
     {
         private event TerseMessageDelegate terseMessage;
         private event ChattyMessageDelegate chattyMessage;
-        private event NewEditionDelegate newEdition;
+        private event ShowEditionStatusDelegate showEditionStatus;
         private event LogDelegate logger;
         private IFetchSettings conf;
         private HttpClient hc;
@@ -40,9 +40,9 @@ namespace BBCIngest
             this.chattyMessage += fm;
         }
 
-        public void addEditionListener(NewEditionDelegate ne)
+        public void addEditionListener(ShowEditionStatusDelegate ne)
         {
-            this.newEdition += ne;
+            this.showEditionStatus += ne;
         }
 
         public void addLogListener(LogDelegate logDelegate)
@@ -125,12 +125,13 @@ namespace BBCIngest
             }
             DateTime pt = latestPublishTime(f);
 
-            newEdition("Latest is " + pt);
+            showEditionStatus("Latest is " + pt);
             string message = t.ToString("HH:mm") + " edition"
                 + " published at " + pt
                 + " and downloaded at " + before.ToString("HH:mm:ss")
                 + " in " + Math.Round(after.Subtract(before).TotalSeconds, 2) + "s";
             logger(message);
+            terseMessage("Fetched " + pt + " edition");
         }
 
         public DateTime latestPublishTime(FileInfo f)
@@ -151,7 +152,7 @@ namespace BBCIngest
         public async Task reFetchIfNeeded(DateTime epoch)
         {
             DateTime? newest = await editionAvailable(epoch);
-            terseMessage("creating ingest using latest edition");
+            chattyMessage("creating ingest using latest edition");
             FileInfo f = new FileInfo(lastWeHave());
             if(f.Exists)
             {
@@ -161,14 +162,14 @@ namespace BBCIngest
                 }
                 else
                 {
-                    newEdition("Latest is " + latestPublishTime(f));
+                    showEditionStatus("Latest is " + latestPublishTime(f));
                 }
             }
             else
             {
                 if (newest == null)
                 {
-                    newEdition("no file yet");
+                    showEditionStatus("no file yet");
                 }
                 else
                 {

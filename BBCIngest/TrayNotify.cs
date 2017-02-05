@@ -49,9 +49,9 @@ namespace BBCIngest
                 BalloonTipText = "BBC Ingest",
                 Visible = true
             };
-            fetcher.addTerseMessageListener(new TerseMessageDelegate(terse));
-            fetcher.addChattyMessageListener(new ChattyMessageDelegate(chatty));
-            fetcher.addEditionListener(new NewEditionDelegate(chatty));
+            fetcher.listenForTerseMessages(new TerseMessageDelegate(terse));
+            fetcher.listenForChattyMessages(new ChattyMessageDelegate(chatty));
+            fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(chatty));
         }
 
         public void terse(string s)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.TaskScheduler;
 using System;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace BBCIngest
@@ -21,14 +22,15 @@ namespace BBCIngest
         private void OnLoad(object sender, EventArgs e)
         {
             schedule = new Schedule(conf);
-            fetcher.addTerseMessageListener(new TerseMessageDelegate(setLine1));
-            fetcher.addChattyMessageListener(new ChattyMessageDelegate(setLine1));
-            fetcher.addEditionListener(new NewEditionDelegate(setLine2));
+            fetcher.listenForTerseMessages(new TerseMessageDelegate(setLine1));
+            fetcher.listenForChattyMessages(new ChattyMessageDelegate(setLine1));
+            fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(setLine2));
         }
 
         public void setLine1(string s)
         {
             label1.Text = s;
+            Thread.Sleep(1000); // let the user see the message
         }
 
         public void setLine2(string s)

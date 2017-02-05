@@ -21,8 +21,9 @@ namespace BBCIngestOne
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
             FetchAndPublish fetcher = new FetchAndPublish(conf);
-            fetcher.addMessageListener(new FetchMessageDelegate(Console.WriteLine));
-            fetcher.addEditionListener(new NewEditionDelegate(Console.WriteLine));
+            fetcher.listenForTerseMessages(new TerseMessageDelegate(Console.WriteLine));
+            fetcher.listenForChattyMessages(new ChattyMessageDelegate(Console.WriteLine));
+            fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(Console.WriteLine));
             await fetcher.republish();
             try
             {

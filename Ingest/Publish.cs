@@ -46,7 +46,16 @@ namespace BBCIngest
             return conf.Basename + s + "." + conf.Suffix;
         }
 
-        public void publish(string path, DateTime t)
+        public void publish(string path, DateTime epoch, DateTime[] all)
+        {
+            publishOne(path, epoch);
+            if(conf.UpdateAllEditions)
+            {
+                publishAllButOne(path, epoch, all);
+            }
+        }
+
+        public void publishOne(string path, DateTime t)
         {
             FileInfo f = new FileInfo(path);
             if (f.Exists == false)
@@ -72,6 +81,25 @@ namespace BBCIngest
             else
             {
                 f.CopyTo(savename, true);
+            }
+        }
+
+        public void publishAll(string path, DateTime[] times)
+        {
+            foreach (DateTime t in times)
+            {
+                publishOne(path, t);
+            }
+        }
+
+        public void publishAllButOne(string path, DateTime theOne, DateTime[] times)
+        {
+            foreach (DateTime t in times)
+            {
+                if (!t.Equals(theOne))
+                {
+                    publishOne(path, t);
+                }
             }
         }
 
