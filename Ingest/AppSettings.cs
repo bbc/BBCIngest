@@ -7,7 +7,7 @@ using static System.Environment;
 
 namespace BBCIngest
 {
-    public class AppSettings : IPublishSettings, IFetchSettings
+    public class AppSettings : IPublishSettings, IFetchSettings, IScheduleSettings
     {
         public bool appSettingsChanged;
         private string defaultDir;

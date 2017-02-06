@@ -3,11 +3,18 @@ using System;
 
 namespace BBCIngest
 {
+    public interface IScheduleSettings
+    {
+        string Minutepattern { get; set; }
+        string Hourpattern { get; set; }
+        int MinutesBefore { get; set; }
+    }
+
     public class Schedule
     {
-        private AppSettings conf;
+        private IScheduleSettings conf;
 
-        public Schedule(AppSettings conf)
+        public Schedule(IScheduleSettings conf)
         {
             this.conf = conf;
         }
