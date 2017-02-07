@@ -85,5 +85,18 @@ namespace Ingest
                 }
             }
         }
+
+        public DateTime? nextRun()
+        {
+            using (TaskService ts = new TaskService())
+            {
+                Task t = ts.GetTask("BBCIngest");
+                if (t != null)
+                {
+                    return t.NextRunTime;
+                }
+            }
+            return null;
+        }
     }
 }
