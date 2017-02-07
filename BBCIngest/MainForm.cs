@@ -11,16 +11,36 @@ namespace BBCIngest
     public partial class MainForm : Form
     {
         private AppSettings conf;
-        private ConcurrentQueue<String> line1 = new ConcurrentQueue<string>();
+        private ConcurrentQueue<String> line1;
+        FetchAndPublish fetcher;
 
         public MainForm(AppSettings conf)
         {
             this.conf = conf;
+            line1 = new ConcurrentQueue<string>();
             InitializeComponent();
+            fetcher = new FetchAndPublish(conf);
+            fetcher.listenForTerseMessages(new TerseMessageDelegate(setLine1));
+            fetcher.listenForChattyMessages(new ChattyMessageDelegate(setLine1));
+            fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(setLine2));
         }
 
-        private void OnLoad(object sender, EventArgs e)
+        private async void OnLoad(object sender, EventArgs e)
         {
+            ScheduleInstaller schedule = new ScheduleInstaller(conf);
+            DateTime? next = schedule.nextRun();
+            if(next != null)
+            {
+                setLine1("Task installed and will next run at "+next.Value);
+            }
+            await fetcher.showLatest();
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            string s;
+            if (line1.TryDequeue(out s))
+                label1.Text = s;
         }
 
         public void setLine1(string s)
@@ -59,10 +79,6 @@ namespace BBCIngest
 
         private async void buttonStart_Click(object sender, EventArgs e)
         {
-            FetchAndPublish fetcher = new FetchAndPublish(conf);
-            fetcher.listenForTerseMessages(new TerseMessageDelegate(setLine1));
-            fetcher.listenForChattyMessages(new ChattyMessageDelegate(setLine1));
-            fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(setLine2));
             await fetcher.republish();
             while(true)
             {
@@ -70,13 +86,6 @@ namespace BBCIngest
                 // wait until after broadcast date before trying for next edition
                 await fetcher.waitUntil(bc);
             }            
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            string s;
-            if(line1.TryDequeue(out s))
-                label1.Text = s;
         }
     }
 }

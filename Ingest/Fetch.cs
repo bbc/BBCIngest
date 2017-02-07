@@ -71,7 +71,7 @@ namespace Ingest
          * but in extremes up to 14 minutes after.
          * 5 minute news bulletin is live and published about 1 minute after the end
          * so around 6 minutes after the epoch
-         * TODO - think about early publishing - not untractable if filenames are unique to the edition
+         * TODO - think about early publishing - not intractable if filenames are unique to the edition
          */
         private async Task<DateTime?> editionAvailable(DateTime epoch)
         {
@@ -82,9 +82,11 @@ namespace Ingest
             response.Dispose();
             if (r == null)
                 return null;
-            if (r < epoch.AddMinutes(-10))
+            DateTime dt = r.Value.DateTime;
+            if (dt < epoch.AddMinutes(-10))
                 return null;
-            return r.Value.DateTime;
+            chattyMessage(dt + " edition is available");
+            return dt;
         }
 
         public async Task<DateTime?> waitfor(DateTime t, DateTime end)
@@ -149,33 +151,48 @@ namespace Ingest
             return dt;
         }
 
-        public async Task reFetchIfNeeded(DateTime epoch)
+        public async Task<bool> shouldRefetch(DateTime epoch)
         {
-            DateTime? newest = await editionAvailable(epoch);
-            chattyMessage("creating ingest using latest edition");
             FileInfo f = new FileInfo(lastWeHave());
-            if(f.Exists)
+            DateTime? newest = await editionAvailable(epoch);
+            if (newest == null)
             {
-                if((newest != null) && (newest.Value > f.LastWriteTimeUtc))
-                {
-                    await save(epoch); // newer file available
-                }
-                else
+                if (f.Exists)
                 {
                     showEditionStatus("Latest is " + latestPublishTime(f));
                 }
-            }
-            else
-            {
-                if (newest == null)
+                else
                 {
                     showEditionStatus("no file yet");
                 }
+                return false; // might want to but internet might not be available
+            }
+            else
+            {
+                if (f.Exists)
+                {
+                    if (newest.Value > f.LastWriteTimeUtc)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        showEditionStatus("Latest is " + latestPublishTime(f));
+                        return false;
+                    }
+                }
                 else
                 {
-                    await save(epoch);
+                    return true;
                 }
             }
+        }
+
+        public async Task reFetchIfNeeded(DateTime epoch)
+        {
+            bool needed = await shouldRefetch(epoch);
+            if(needed)
+                await save(epoch);
         }
     }
 }
