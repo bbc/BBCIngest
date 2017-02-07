@@ -13,7 +13,6 @@ namespace Ingest
     public class FetchAndPublish : IDisposable
     {
         private event TerseMessageDelegate terseMessage;
-
         private AppSettings conf;
         private Logging log;
         private ScheduleRunner schedule;
@@ -47,6 +46,7 @@ namespace Ingest
         public void listenForChattyMessages(ChattyMessageDelegate m)
         {
             fetcher.addChattyMessageListener(m);
+            publisher.addChattyMessageListener(m);
         }
 
         public void listenForEditionStatus(ShowEditionStatusDelegate ne)
@@ -74,6 +74,11 @@ namespace Ingest
             await fetcher.reFetchIfNeeded(epoch);
             // (re-)publish it
             publisher.publish(fetcher.lastWeHave(), epoch, schedule.events(epoch.Date));
+        }
+
+        public async Task showLatest()
+        {
+            bool b = await fetcher.shouldRefetch(DateTime.UtcNow);
         }
 
         public async Task<DateTime> fetchAndPublish(DateTime epoch)
