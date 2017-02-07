@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using Ingest;
 
 namespace BBCIngest
 {
@@ -26,19 +27,19 @@ namespace BBCIngest
             Directory.CreateDirectory(conf.Publish);
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
-            FetchAndPublish fetcher = new FetchAndPublish(conf);
             if (arg.Equals(""))
             {
-                Application.Run(new MainForm(conf, fetcher));
+                Application.Run(new MainForm(conf));
             }
             else
             {
-                MainTask(fetcher).Wait();
+                MainTask(conf).Wait();
             }
         }
 
-        static async Task MainTask(FetchAndPublish fetcher)
+        static async Task MainTask(AppSettings conf)
         {
+            FetchAndPublish fetcher = new FetchAndPublish(conf);
             TrayNotify notify = new TrayNotify(fetcher);
             await fetcher.republish();
             DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);

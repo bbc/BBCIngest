@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Xml.Serialization;
 using static System.Environment;
 
-namespace BBCIngest
+namespace Ingest
 {
     public class AppSettings : IPublishSettings, IFetchSettings, IScheduleSettings
     {
@@ -168,16 +168,25 @@ namespace BBCIngest
                 if (fi.Exists)
                 {
                     fs = fi.OpenRead();
-                    AppSettings mas = (AppSettings)sz.Deserialize(fs);
-                    fileExists = true;
-                    PropertyInfo[] p = this.GetType().GetProperties();
-                    for (int i=0; i<p.Length; i++)
+                    try
                     {
-                        p[i].SetValue(this, p[i].GetValue(mas));
+                        AppSettings mas = (AppSettings)sz.Deserialize(fs);
+                        PropertyInfo[] p = this.GetType().GetProperties();
+                        for (int i = 0; i < p.Length; i++) // or use ShallowCopy?
+                        {
+                            p[i].SetValue(this, p[i].GetValue(mas));
+                        }
+                        fileExists = true;
                     }
-                    // or use ShallowCopy?
+                    catch (Exception ex)
+                    {
+                        terseMessage(ex.Message);
+                        // there was something wrong with the file. Delete and start again
+                        fileExists = false;
+                        fi.Delete();
+                    }
                 }
-                else
+                if(!fileExists)
                 {
                     Logfolder = settingsPath; // @"C:\log\";
                     Archive = settingsPath; // @"C:\archive\";
@@ -231,7 +240,6 @@ namespace BBCIngest
                     sz.Serialize(sw, this);
                     sw.Close();
                 }
-                sw.Dispose();
             }
             return appSettingsChanged;
         }

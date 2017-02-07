@@ -3,11 +3,11 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 
-namespace BBCIngest
+namespace Ingest
 {
     public delegate void LogDelegate(string s);
 
-    class Logging
+    public class Logging
     {
         private event LogDelegate logevent;
         private AppSettings conf;
@@ -21,7 +21,7 @@ namespace BBCIngest
             this.logevent += new LogDelegate(post);
         }
 
-        internal void WriteLine(string logmessage)
+        public void WriteLine(string logmessage)
         {
             logevent(logmessage);
         }
@@ -37,7 +37,7 @@ namespace BBCIngest
         internal void post(string logmessage)
         {
             DateTime dt = DateTime.UtcNow;
-            if (conf.PostLogs && conf.LogUrl != "")
+            if (conf.PostLogs && conf.LogUrl != "" && hc != null)
             {
                 string f = "\"date\": \"{0:yyyy-MM-ddTHH:mm:ssZ}\", \"message\": \"{1}\", \"city\": \"{2}\", \"station\": \"{3}\"";
                 string jsonObject = "[{" + string.Format(f, dt, logmessage, conf.City, conf.Station) + "}]";

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.IO;
 
-namespace BBCIngest
+namespace Ingest
 {
     public interface IFetchSettings
     {

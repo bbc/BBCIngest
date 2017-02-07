@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace BBCIngest
+namespace Ingest
 {
     public interface IPublishSettings
     {

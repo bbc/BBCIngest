@@ -4,19 +4,19 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace BBCIngest
+namespace Ingest
 {
     public delegate void ShowEditionStatusDelegate(string s);
     public delegate void TerseMessageDelegate(string s);
     public delegate void ChattyMessageDelegate(string s);
 
-    public class FetchAndPublish
+    public class FetchAndPublish : IDisposable
     {
         private event TerseMessageDelegate terseMessage;
 
         private AppSettings conf;
         private Logging log;
-        private Schedule schedule;
+        private ScheduleRunner schedule;
         private HttpClient hc;
         Fetch fetcher;
         Publish publisher;
@@ -32,7 +32,7 @@ namespace BBCIngest
             this.fetcher = new Fetch(conf, hc);
             this.publisher = new Publish(conf);
             log = new Logging(conf, hc);
-            schedule = new Schedule(conf);
+            schedule = new ScheduleRunner(conf);
             fetcher.addLogListener(new LogDelegate(log.WriteLine));
         }
 
@@ -52,12 +52,6 @@ namespace BBCIngest
         public void listenForEditionStatus(ShowEditionStatusDelegate ne)
         {
             fetcher.addEditionListener(ne);
-        }
-
-        public void ChangeConfig(AppSettings conf)
-        {
-            this.conf = conf;
-            log.WriteLine("new config");
         }
 
         public async Task waitUntil(DateTime t)
@@ -142,6 +136,18 @@ namespace BBCIngest
             }
             terseMessage(message);
             log.WriteLine(message);
+        }
+
+        protected virtual void Dispose(bool all)
+        {
+            if (all)
+                hc.Dispose();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
