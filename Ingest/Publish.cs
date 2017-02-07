@@ -17,6 +17,7 @@ namespace Ingest
     class Publish
     {
         private event TerseMessageDelegate terseMessage;
+        private event ChattyMessageDelegate chattyMessage;
         private IPublishSettings conf;
 
         public Publish(IPublishSettings conf)
@@ -27,6 +28,11 @@ namespace Ingest
         public void addTerseMessageListener(TerseMessageDelegate m)
         {
             this.terseMessage += m;
+        }
+
+        public void addChattyMessageListener(ChattyMessageDelegate fm)
+        {
+            this.chattyMessage += fm;
         }
 
         public string discname(DateTime t)
@@ -48,6 +54,7 @@ namespace Ingest
 
         public void publish(string path, DateTime epoch, DateTime[] all)
         {
+            chattyMessage("Publishing ...");
             publishOne(path, epoch);
             if(conf.UpdateAllEditions)
             {
