@@ -1,6 +1,4 @@
-﻿using Ingest;
-
-namespace BBCIngest
+﻿namespace BBCIngest
 {
     partial class MainForm
     {
@@ -20,6 +18,7 @@ namespace BBCIngest
                 components.Dispose();
             }
             base.Dispose(disposing);
+            fetcher.Dispose();
         }
 
         #region Windows Form Designer generated code
@@ -83,7 +82,7 @@ namespace BBCIngest
             this.buttonRfTS.Name = "buttonRfTS";
             this.buttonRfTS.Size = new System.Drawing.Size(140, 23);
             this.buttonRfTS.TabIndex = 4;
-            this.buttonRfTS.Text = "Run From Task Scheduler";
+            this.buttonRfTS.Text = "Update Task Scheduler";
             this.buttonRfTS.UseVisualStyleBackColor = true;
             this.buttonRfTS.Click += new System.EventHandler(this.buttonRfTS_Click);
             // 
