@@ -52,7 +52,11 @@ Source: "..\logfileurl.txt"; DestDir: "{app}"; Flags: ignoreversion
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Parameters: "install"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait skipifsilent; Parameters: "install"
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; BeforeInstall: DeletePropertiesFile
+
+[UninstallRun]
+Filename: "{app}\{#MyAppExeName}"; Parameters: "uninstall";
 
 [Code]
 var
@@ -141,4 +145,11 @@ begin
         SaveStringsToUTF8File(ExpandConstant('{app}/init.properties'), params, false);
    end;
 end;
+
+procedure DeletePropertiesFile();
+begin
+  DeleteFile(ExpandConstant('{app}/init.properties'));
+  MsgBox('Deleted Properties File.', mbInformation, MB_OK);
+end;
+
 end.

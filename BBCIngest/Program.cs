@@ -8,6 +8,8 @@ namespace BBCIngest
 {
     static class Program
     {
+        private static string init_file = "init.properties";
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -23,34 +25,42 @@ namespace BBCIngest
             Application.SetCompatibleTextRenderingDefault(false);
             AppSettings conf = new AppSettings();
             conf.LoadAppSettings();
-            conf.SaveAppSettings();
             Directory.CreateDirectory(conf.Publish);
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
-            if (arg.Equals(""))
+            //MessageBox.Show(arg, "BBCIngest", MessageBoxButtons.OK);
+            if (arg.Equals("install"))
             {
-                Application.Run(new MainForm(conf));
-            }
-            else if(arg.Equals("install"))
-            {
-                foreach (var row in File.ReadAllLines("init.properties"))
+                if (File.Exists(init_file))
                 {
-                    string[] s = row.Split('=');
-                    if (s[0].Equals("postLogs"))
-                        conf.PostLogs = s[1].Equals("1");
-                    if (s[0].Equals("city"))
-                        conf.City = s[1];
-                    if (s[0].Equals("station"))
-                        conf.Station = s[1];
-                    if (s[0].Equals("logUrl"))
-                        conf.LogUrl = s[1]; 
+                    foreach (var row in File.ReadAllLines(init_file))
+                    {
+                        string[] s = row.Split('=');
+                        if (s[0].Equals("postLogs"))
+                            conf.PostLogs = s[1].Equals("1");
+                        if (s[0].Equals("city"))
+                            conf.City = s[1];
+                        if (s[0].Equals("station"))
+                            conf.Station = s[1];
+                        if (s[0].Equals("logUrl"))
+                            conf.LogUrl = s[1];
+                    }
                 }
                 conf.SaveAppSettings();
-                Application.Run(new MainForm(conf));
+            }
+            else if (arg.Equals("uninstall"))
+            {
+                ScheduleInstaller schedule = new ScheduleInstaller(conf);
+                schedule.deleteTaskAndTriggers();
+                //MessageBox.Show("Scheduled Tasks Removed", "BBCIngest", MessageBoxButtons.OK);
+            }
+            else if (arg.Equals("once"))
+            {
+                MainTask(conf).Wait();
             }
             else
             {
-                MainTask(conf).Wait();
+                Application.Run(new MainForm(conf));
             }
         }
 
