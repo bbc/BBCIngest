@@ -31,6 +31,23 @@ namespace BBCIngest
             {
                 Application.Run(new MainForm(conf));
             }
+            else if(arg.Equals("install"))
+            {
+                foreach (var row in File.ReadAllLines("init.properties"))
+                {
+                    string[] s = row.Split('=');
+                    if (s[0].Equals("postLogs"))
+                        conf.PostLogs = s[1].Equals("1");
+                    if (s[0].Equals("city"))
+                        conf.City = s[1];
+                    if (s[0].Equals("station"))
+                        conf.Station = s[1];
+                    if (s[0].Equals("logUrl"))
+                        conf.LogUrl = s[1]; 
+                }
+                conf.SaveAppSettings();
+                Application.Run(new MainForm(conf));
+            }
             else
             {
                 MainTask(conf).Wait();

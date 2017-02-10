@@ -44,19 +44,15 @@ Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.dll"; DestDir: "{app}"; Fla
 Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\..\..\AppData\Local\{#MyAppName}.config"; DestDir: "{localappdata}"; Flags: ignoreversion
+Source: "..\logfileurl.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; 
-  Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; 
-  Parameters: "install";
-  Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Parameters: "install"; Flags: nowait postinstall skipifsilent
 
 [Code]
 var
@@ -125,11 +121,12 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 var
  params     : TArrayOfString;
+ url        : AnsiString;
  resultCode : Integer;
 begin
     if  CurStep=ssPostInstall then
     begin
-        SetLength(params, 3);
+        SetLength(params, 4);
         params[0] := 'postLogs=';
         if PostLogs.Checked then begin
             params[0] := params[0] + '1';
@@ -139,10 +136,9 @@ begin
         end;
         params[1] := 'station=' + Station.Text;
         params[2] := 'city=' + City.Text;
-        if SaveStringsToUTF8File(ExpandConstant('{app}/init.properties'), params, false) then
-        begin
-        // error?
-        end;
+        LoadStringFromFile(ExpandConstant('{app}/logfileurl.txt'), url);
+        params[3] := 'logUrl='+url;
+        SaveStringsToUTF8File(ExpandConstant('{app}/init.properties'), params, false);
    end;
 end;
 end.
