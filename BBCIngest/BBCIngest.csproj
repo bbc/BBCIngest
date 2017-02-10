@@ -119,6 +119,7 @@
     <None Include="Resources\bbcworldservice.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Licence.txt" />
     <Content Include="Resources\main.ico" />
     <Content Include="Resources\ws.png" />
   </ItemGroup>
