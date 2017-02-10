@@ -24,6 +24,7 @@ DisableProgramGroupPage=yes
 OutputBaseFilename={#MyAppName}_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
+LicenseFile=licence.txt
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -52,7 +53,10 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; 
+  Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; 
+  Parameters: "install";
+  Flags: nowait postinstall skipifsilent
 
 [Code]
 var
@@ -69,35 +73,47 @@ end;
 procedure InitializeWizard();
 var
     flabel : TNewStaticText;
+    y : Integer;
 begin
   UserPage := CreateCustomPage(wpWelcome, 'Remote Logging', 'Please enter your Station and City');
 
+  y := 8;
+
   flabel := TNewStaticText.Create(UserPage);
-  flabel.Top := ScaleY(12)
+  flabel.Top := ScaleY(y+4)
+  flabel.Caption := 'Because the program is licenc:';
+  flabel.Parent := UserPage.Surface;
+
+  flabel := TNewStaticText.Create(UserPage);
+  flabel.Top := ScaleY(y+4)
   flabel.Caption := 'Station:';
   flabel.Parent := UserPage.Surface;
 
   Station := TNewEdit.Create(UserPage);
-  Station.Top := ScaleY(8);
+  Station.Top := ScaleY(y);
   Station.Left := ScaleX(48);
   Station.Width := UserPage.SurfaceWidth div 2 - ScaleX(8);
   Station.Text := 'Station';
   Station.Parent := UserPage.Surface;
 
+  y := y + 56;
+
   flabel := TNewStaticText.Create(UserPage);
-  flabel.Top := ScaleY(68)
+  flabel.Top := ScaleY(y+4)
   flabel.Caption := 'City:';
   flabel.Parent := UserPage.Surface;
 
   City := TNewEdit.Create(UserPage);
-  City.Top := ScaleY(64);
+  City.Top := ScaleY(y);
   City.Left := ScaleX(48);
   City.Width := UserPage.SurfaceWidth div 2 - ScaleX(8);
   City.Text := 'City';
   City.Parent := UserPage.Surface;
       
+  y := y + 56;
+
   PostLogs := TNewCheckBox.Create(UserPage);
-  PostLogs.Top := ScaleY(128);
+  PostLogs.Top := ScaleY(y+4);
   PostLogs.Width := UserPage.SurfaceWidth div 2;
   PostLogs.Height := ScaleY(17);
   PostLogs.Caption := 'Allow Logs to be sent to the BBC';
@@ -108,36 +124,25 @@ end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 var
-  config  : TArrayOfString;
-  path    : String;
-  n       : Integer;
-  i       : Integer;
-  pl      : String;
+ params     : TArrayOfString;
+ resultCode : Integer;
 begin
     if  CurStep=ssPostInstall then
+    begin
+        SetLength(params, 3);
+        params[0] := 'postLogs=';
         if PostLogs.Checked then begin
-            pl := 'true';
+            params[0] := params[0] + '1';
         end
         else begin
-            pl := 'false';
+            params[0] := params[0] + '0';
         end;
-        path := ExpandConstant('{localappdata}');
-        LoadStringsFromFile(path+'\BBCIngest.config', config);
-        n := GetArrayLength(config);
-        if n>0 then begin
-            for i := 0 to n-1 do begin
-                if Pos('<Archive', config[i])>0 then
-                    config[i] := '<Archive>'+path+'</Archive>';
-                if Pos('<Logfolder', config[i])>0 then
-                    config[i] := '<Logfolder>'+path+'</Logfolder>';
-                if Pos('<Station', config[i])>0 then
-                    config[i] := '<Station>'+Station.Text+'</Station>';
-                if Pos('<City', config[i])>0 then
-                    config[i] := '<City>'+City.Text+'</City>';
-                if Pos('<PostLogs', config[i])>0 then
-                    config[i] := '<PostLogs>'+pl+'</PostLogs>';
-            end;
-            SaveStringsToFile(path+'\BBCIngest.config', config, false);
+        params[1] := 'station=' + Station.Text;
+        params[2] := 'city=' + City.Text;
+        if SaveStringsToUTF8File(ExpandConstant('{app}/init.properties'), params, false) then
+        begin
+        // error?
         end;
-    end;
+   end;
+end;
 end.
