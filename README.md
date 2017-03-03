@@ -11,10 +11,13 @@ Poll the web for the latest edition of an audio file.
 
 If you install the scheduled tasks the program will be started a few minutes before a new edition is due. 
 There will be notifications when a new edition is found and when it is published.
+After installing to the task scheduler the program can be closed.
 
 ## Running interactively
 
-If you press start the program operates as follows:
+To run interactively open the settings menu and set 'RunInForeground' to true. Exit the program and run it again.
+
+If RunInForeground is set there will be a start button. If you press start the program operates as follows:
 
 1. The program calculates the publication time of the next edition from the hour and minute patterns in the settings
 2. It then goes to sleep until a few minutes before the next edition is due, set by the minutes before setting
@@ -58,3 +61,5 @@ If the logUrl is set, then log messages are http posted to that url as a JSON ob
 If SafePublishing is set (recommended) the programme publishes to a temporary file name and then renames the completed file to the final name.
 
 If Publish All Versions is set then all scheduled versions are published each time. This is important if you don't use the Task Scheduler.
+
+If Run As Service is set then the task will be installed as a service. You need to run the program with Admin privileges for this to work.
