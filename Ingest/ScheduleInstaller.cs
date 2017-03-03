@@ -9,7 +9,7 @@ namespace Ingest
         {
         }
 
-        public void createTaskAndTriggers(String execPath)
+        public TaskDefinition createTaskDefinition(String execPath)
         {
             using (TaskService ts = new TaskService())
             {
@@ -18,6 +18,12 @@ namespace Ingest
                 td.RegistrationInfo.Description = "Run BBCIngest";
 
                 td.Principal.LogonType = TaskLogonType.InteractiveToken;
+                td.Settings.DisallowStartIfOnBatteries = false;
+                td.Settings.RunOnlyIfNetworkAvailable = true;
+                td.Settings.RunOnlyIfIdle = false;
+                td.Settings.DisallowStartIfOnBatteries = false;
+                td.Settings.WakeToRun = true;
+
                 int[] minutes = this.minutes();
                 if (conf.Hourpattern == "*")
                 {
@@ -56,7 +62,34 @@ namespace Ingest
 
                 // Add an action that will launch BBCIngest whenever the trigger fires
                 td.Actions.Add(new ExecAction(execPath, "once", null));
+                return td;
+            }
+        }
 
+        public bool installTaskAsService(TaskDefinition td)
+        {
+            using (TaskService ts = new TaskService())
+            {
+                // Register the task in the root folder
+                const string taskName = "BBCIngest";
+                try
+                {
+                    ts.RootFolder.RegisterTaskDefinition(taskName, td,
+                       TaskCreation.CreateOrUpdate, "SYSTEM", null,
+                        TaskLogonType.ServiceAccount);
+                }
+                catch (System.UnauthorizedAccessException e)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        public void installUserTask(TaskDefinition td)
+        {
+            using (TaskService ts = new TaskService())
+            {
                 // Register the task in the root folder
                 const string taskName = "BBCIngest";
                 ts.RootFolder.RegisterTaskDefinition(taskName, td);
