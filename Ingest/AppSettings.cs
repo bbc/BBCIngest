@@ -33,6 +33,11 @@ namespace Ingest
             }
         }
 
+        [CategoryAttribute("Run")]
+        public bool RunInForeground { get; set; }
+        [CategoryAttribute("Run")]
+        public bool RunAsService { get; set; }
+
         [CategoryAttribute("Logging")]
         public string City { get; set; }
 
@@ -120,6 +125,7 @@ namespace Ingest
                 updateAllEditions = value;
             }
         }
+
 
         public int ValueWidth()
         {
