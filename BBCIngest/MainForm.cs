@@ -13,6 +13,7 @@ namespace BBCIngest
         private AppSettings conf;
         private ConcurrentQueue<String> line1;
         FetchAndPublish fetcher;
+        private bool taskInstalled = false;
 
         public MainForm(AppSettings conf)
         {
@@ -28,12 +29,15 @@ namespace BBCIngest
         private async void OnLoad(object sender, EventArgs e)
         {
             ScheduleInstaller schedule = new ScheduleInstaller(conf);
-            DateTime? next = schedule.nextRun();
-            if(next != null)
+            await getLatest(schedule);
+            if (conf.RunInForeground)
             {
-                setLine1("Task installed and will next run at "+next.Value);
+                buttonExitOrStart.Text = "Start";
             }
-            await fetcher.showLatest();
+            else
+            {
+                buttonExitOrStart.Text = "Exit";
+            }
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -70,22 +74,97 @@ namespace BBCIngest
 
         private void buttonRfTS_Click(object sender, EventArgs e)
         {
-            string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             ScheduleInstaller schedule = new ScheduleInstaller(conf);
-            schedule.deleteTaskAndTriggers();
-            schedule.createTaskAndTriggers(path);
-            schedule.runTask();
+            deleteTask(schedule);
+            createTask(schedule);
+            getLatest(schedule);
         }
 
-        private async void buttonStart_Click(object sender, EventArgs e)
+        private void buttonRemoveTasks_Click(object sender, EventArgs e)
         {
-            await fetcher.republish();
-            while(true)
-            {
-                DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);
-                // wait until after broadcast date before trying for next edition
-                await fetcher.waitUntil(bc);
-            }            
+            ScheduleInstaller schedule = new ScheduleInstaller(conf);
+            deleteTask(schedule);
         }
+
+        private async void buttonExitOrStart_Click(object sender, EventArgs e)
+        {
+            if (conf.RunInForeground)
+            {
+                if(taskInstalled)
+                {
+                    deleteTask(new ScheduleInstaller(conf));
+                }
+                await fetcher.republish();
+                while (true)
+                {
+                    DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);
+                    // wait until after broadcast date before trying for next edition
+                    await fetcher.waitUntil(bc);
+                }
+            }
+            else
+            {
+                if (taskInstalled)
+                {
+                    MessageBox.Show("Files will be fetched in the background");
+                    Application.Exit();
+                }
+                else
+                {
+                    MessageBox.Show("Update task scheduler to fetch files in the background");
+                }
+            }
+        }
+
+        private void createTask(ScheduleInstaller schedule)
+        {
+            string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            TaskDefinition td = schedule.createTaskDefinition(path);
+            if(conf.RunAsService)
+            {
+                if(schedule.installTaskAsService(td)==false)
+                {
+                    setLine1("either set RunAsService false in settings or run this program with Admin privileges");
+                    taskInstalled = false;
+                    return;
+                }
+            }
+            else
+            {
+                schedule.installUserTask(td);
+            }
+            schedule.runTask();
+            taskInstalled = true;
+        }
+
+        private void deleteTask(ScheduleInstaller schedule)
+        {
+            DateTime? next = schedule.nextRun();
+            if (next != null)
+            {
+                schedule.deleteTaskAndTriggers();
+                taskInstalled = false;
+                setLine1("Tasks removed");
+                buttonRfTS.Text = "Install Task";
+            }
+        }
+
+        private System.Threading.Tasks.Task getLatest(ScheduleInstaller schedule)
+        {
+            DateTime? next = schedule.nextRun();
+            if (next != null)
+            {
+                setLine1("Task installed and will next run at " + next.Value);
+                setLine2("Latest is " + fetcher.lastWeHave());
+                taskInstalled = true;
+                buttonRfTS.Text = "Update Task Scheduler";
+            }
+            else
+            {
+                buttonRfTS.Text = "Install Task";
+            }
+            return fetcher.showLatest();
+        }
+
     }
 }

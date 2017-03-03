@@ -36,15 +36,16 @@
             this.label2 = new System.Windows.Forms.Label();
             this.buttonSettings = new System.Windows.Forms.Button();
             this.buttonRfTS = new System.Windows.Forms.Button();
-            this.buttonStart = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.buttonRemoveTasks = new System.Windows.Forms.Button();
+            this.buttonExitOrStart = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
             // 
             this.pictureBox1.Image = global::BBCIngest.Properties.Resources.bbcworldservice;
-            this.pictureBox1.Location = new System.Drawing.Point(24, 22);
+            this.pictureBox1.Location = new System.Drawing.Point(47, 22);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(302, 170);
             this.pictureBox1.TabIndex = 0;
@@ -68,9 +69,9 @@
             // 
             // buttonSettings
             // 
-            this.buttonSettings.Location = new System.Drawing.Point(24, 232);
+            this.buttonSettings.Location = new System.Drawing.Point(13, 232);
             this.buttonSettings.Name = "buttonSettings";
-            this.buttonSettings.Size = new System.Drawing.Size(75, 23);
+            this.buttonSettings.Size = new System.Drawing.Size(67, 23);
             this.buttonSettings.TabIndex = 3;
             this.buttonSettings.Text = "Settings";
             this.buttonSettings.UseVisualStyleBackColor = true;
@@ -78,23 +79,13 @@
             // 
             // buttonRfTS
             // 
-            this.buttonRfTS.Location = new System.Drawing.Point(105, 232);
+            this.buttonRfTS.Location = new System.Drawing.Point(86, 232);
             this.buttonRfTS.Name = "buttonRfTS";
-            this.buttonRfTS.Size = new System.Drawing.Size(140, 23);
+            this.buttonRfTS.Size = new System.Drawing.Size(131, 23);
             this.buttonRfTS.TabIndex = 4;
             this.buttonRfTS.Text = "Update Task Scheduler";
             this.buttonRfTS.UseVisualStyleBackColor = true;
             this.buttonRfTS.Click += new System.EventHandler(this.buttonRfTS_Click);
-            // 
-            // buttonStart
-            // 
-            this.buttonStart.Location = new System.Drawing.Point(251, 232);
-            this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(75, 23);
-            this.buttonStart.TabIndex = 5;
-            this.buttonStart.Text = "Start";
-            this.buttonStart.UseVisualStyleBackColor = true;
-            this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
             // 
             // timer1
             // 
@@ -102,12 +93,33 @@
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // buttonRemoveTasks
+            // 
+            this.buttonRemoveTasks.Location = new System.Drawing.Point(224, 231);
+            this.buttonRemoveTasks.Name = "buttonRemoveTasks";
+            this.buttonRemoveTasks.Size = new System.Drawing.Size(101, 23);
+            this.buttonRemoveTasks.TabIndex = 7;
+            this.buttonRemoveTasks.Text = "Remove Tasks";
+            this.buttonRemoveTasks.UseVisualStyleBackColor = true;
+            this.buttonRemoveTasks.Click += new System.EventHandler(this.buttonRemoveTasks_Click);
+            // 
+            // buttonExitOrStart
+            // 
+            this.buttonExitOrStart.Location = new System.Drawing.Point(331, 230);
+            this.buttonExitOrStart.Name = "buttonExitOrStart";
+            this.buttonExitOrStart.Size = new System.Drawing.Size(63, 23);
+            this.buttonExitOrStart.TabIndex = 8;
+            this.buttonExitOrStart.Text = "Exit";
+            this.buttonExitOrStart.UseVisualStyleBackColor = true;
+            this.buttonExitOrStart.Click += new System.EventHandler(this.buttonExitOrStart_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(351, 261);
-            this.Controls.Add(this.buttonStart);
+            this.ClientSize = new System.Drawing.Size(397, 261);
+            this.Controls.Add(this.buttonExitOrStart);
+            this.Controls.Add(this.buttonRemoveTasks);
             this.Controls.Add(this.buttonRfTS);
             this.Controls.Add(this.buttonSettings);
             this.Controls.Add(this.label2);
@@ -130,8 +142,9 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button buttonSettings;
         private System.Windows.Forms.Button buttonRfTS;
-        private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Button buttonRemoveTasks;
+        private System.Windows.Forms.Button buttonExitOrStart;
     }
 }
 
