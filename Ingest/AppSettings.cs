@@ -207,13 +207,18 @@ namespace Ingest
                     Minutepattern = "00,30";
 
                     Publish = @"C:\source\";
-                    Discdate = "HHmm";
+                    //Discdate = "HHmm";
+                    Discdate = "";
                     BroadcastMinuteAfter = 0;
+                    SafePublishing = true;
 
                     PostLogs = true;
                     LogUrl = "";
-                    City = "London";
-                    Station = "BBC World Service";
+                    City = "";
+                    Station = "";
+
+                    RunAsService = false;
+                    RunInForeground = false;
                 }
             }
             catch(Exception ex)

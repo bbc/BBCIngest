@@ -36,8 +36,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: ".\bin\Release\{#MyAppName}.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\{#MyAppName}.exe.config"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\{#MyAppName}.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\{#MyAppName}.vshost.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\{#MyAppName}.vshost.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+;Source: ".\bin\Release\{#MyAppName}.vshost.exe"; DestDir: "{app}"; Flags: ignoreversion
+;Source: ".\bin\Release\{#MyAppName}.vshost.exe.config"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\Ingest.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\Ingest.pdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -149,7 +149,7 @@ end;
 procedure DeletePropertiesFile();
 begin
   DeleteFile(ExpandConstant('{app}/init.properties'));
-  MsgBox('Deleted Properties File.', mbInformation, MB_OK);
+  ;MsgBox('Deleted Properties File.', mbInformation, MB_OK);
 end;
 
 end.

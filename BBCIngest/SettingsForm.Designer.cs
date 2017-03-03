@@ -38,13 +38,13 @@
             // 
             this.propertyGrid1.Location = new System.Drawing.Point(3, 3);
             this.propertyGrid1.Name = "propertyGrid1";
-            this.propertyGrid1.Size = new System.Drawing.Size(300, 370);
+            this.propertyGrid1.Size = new System.Drawing.Size(300, 444);
             this.propertyGrid1.TabIndex = 0;
             // 
             // button1
             // 
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.button1.Location = new System.Drawing.Point(21, 394);
+            this.button1.Location = new System.Drawing.Point(21, 465);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 1;
@@ -58,7 +58,7 @@
             this.flowLayoutPanel1.Controls.Add(this.propertyGrid1);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(21, 12);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(306, 376);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(306, 450);
             this.flowLayoutPanel1.TabIndex = 2;
             // 
             // SettingsForm
@@ -68,11 +68,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(347, 425);
+            this.ClientSize = new System.Drawing.Size(347, 500);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.button1);
             this.Name = "SettingsForm";
             this.Text = "Settings";
+            this.Load += new System.EventHandler(this.SettingsForm_Load);
             this.flowLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

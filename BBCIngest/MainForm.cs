@@ -111,7 +111,7 @@ namespace BBCIngest
                 }
                 else
                 {
-                    MessageBox.Show("Update task scheduler to fetch files in the background");
+                    MessageBox.Show("Install task to fetch files in the background");
                 }
             }
         }
@@ -155,7 +155,7 @@ namespace BBCIngest
             if (next != null)
             {
                 setLine1("Task installed and will next run at " + next.Value);
-                setLine2("Latest is " + fetcher.lastWeHave());
+                //setLine2("Latest is " + fetcher.lastWeHave());
                 taskInstalled = true;
                 buttonRfTS.Text = "Update Task Scheduler";
             }
