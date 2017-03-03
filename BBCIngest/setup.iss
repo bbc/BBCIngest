@@ -149,7 +149,6 @@ end;
 procedure DeletePropertiesFile();
 begin
   DeleteFile(ExpandConstant('{app}/init.properties'));
-  ;MsgBox('Deleted Properties File.', mbInformation, MB_OK);
 end;
 
 end.
