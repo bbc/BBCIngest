@@ -56,7 +56,7 @@ namespace Ingest
         {
             chattyMessage("Publishing ...");
             publishOne(path, epoch);
-            if(conf.UpdateAllEditions)
+            if(conf.UpdateAllEditions && conf.Discdate.Length>0)
             {
                 publishAllButOne(path, epoch, all);
             }

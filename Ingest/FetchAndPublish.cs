@@ -54,6 +54,11 @@ namespace Ingest
             fetcher.addEditionListener(ne);
         }
 
+        public string lastWeHave()
+        {
+            return fetcher.lastWeHave();
+        }
+
         public async Task waitUntil(DateTime t)
         {
             int d = (int)t.Subtract(DateTime.UtcNow).TotalMilliseconds;
