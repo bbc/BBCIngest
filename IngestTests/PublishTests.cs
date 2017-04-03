@@ -1,11 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ingest;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
+using System.IO;
 
 namespace Ingest.Tests
 {
@@ -34,6 +30,8 @@ namespace Ingest.Tests
             ProcessStartInfo startInfo = uut.getPSI("1", "2", Codec.mp2);
             Assert.AreEqual("ffmpeg.exe", startInfo.FileName);
             Assert.AreEqual("-i 1 -acodec mp2 2", startInfo.Arguments);
+            startInfo.FileName = Directory.GetCurrentDirectory()+@"\ffmpeg.exe";
+            uut.transCodeTo(startInfo);
         }
     }
 }

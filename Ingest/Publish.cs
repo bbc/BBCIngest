@@ -116,28 +116,34 @@ namespace Ingest
             }
         }
 
+        public void transCodeTo(string source, string dest, Codec codec)
+        {
+            transCodeTo(getPSI(source, dest, codec));
+        }
+
         public ProcessStartInfo getPSI(string source, string dest, Codec codec)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.CreateNoWindow = false;
             startInfo.UseShellExecute = false;
             Assembly a = Assembly.GetEntryAssembly();
-            if(a == null)
+            if (a == null)
             {
                 startInfo.FileName = "ffmpeg.exe";
             }
             else
             {
-                startInfo.FileName = a.Location + "\\ffmpeg.exe";
+                FileInfo fi = new FileInfo(a.Location);
+                startInfo.FileName = fi.DirectoryName + @"\ffmpeg.exe";
             }
+            terseMessage(startInfo.Arguments);
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.Arguments = "-i " + source + " -acodec " + codec + " " + dest;
             return startInfo;
         }
 
-        public void transCodeTo(string source, string dest, Codec codec)
+        public void transCodeTo(ProcessStartInfo startInfo)
         {
-            ProcessStartInfo startInfo = getPSI(source, dest, codec);
             try
             {
                 // Start the process with the info we specified.
@@ -147,9 +153,10 @@ namespace Ingest
                     exeProcess.WaitForExit();
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Log error.
+                terseMessage(ex.ToString());
             }
         }
     }

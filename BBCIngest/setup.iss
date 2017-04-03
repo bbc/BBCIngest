@@ -6,7 +6,8 @@
 #define MyAppPublisher "BBC World Service"
 #define MyAppURL "http://www.bbc.com/worldserviceradio"
 #define MyAppExeName "BBCIngest.exe"
-#define Settings "
+#define Settings ""
+
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
@@ -44,7 +45,7 @@ Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.dll"; DestDir: "{app}"; Fla
 Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bbcminutew.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\default.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\ffmpeg.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -129,7 +130,7 @@ var
  ini        : String;
  resultCode : Integer;
 begin
-    ini := ExpandConstant('{app}/bbcminutew.ini');
+    ini := ExpandConstant('{app}/default.ini');
     if  CurStep=ssPostInstall then
     begin
         SetLength(params, 8);
@@ -145,8 +146,8 @@ begin
         params[3] := 'logUrl='+GetIniString('Log', 'LogUrl', '', ini);
         params[4] := 'Basename='+GetIniString('Source', 'Basename', '', ini);
         params[5] := 'Prefix='+GetIniString('Source', 'Prefix', '', ini);
-        params[6] := 'Prefix='+GetIniString('Source', 'Suffix', '', ini);
-        params[7] := 'Prefix='+GetIniString('Source', 'Webdate', '', ini);
+        params[6] := 'Suffix='+GetIniString('Source', 'Suffix', '', ini);
+        params[7] := 'Webdate='+GetIniString('Source', 'Webdate', '', ini);
         SaveStringsToUTF8File(ExpandConstant('{app}/init.properties'), params, false);
    end;
 end;
