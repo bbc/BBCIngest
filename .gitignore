@@ -242,3 +242,6 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /logfileurl.txt
+/ffmpeg.exe
+/bbcminutew.ini
+/bbcminute3.ini

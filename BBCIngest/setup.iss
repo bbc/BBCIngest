@@ -44,7 +44,8 @@ Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.dll"; DestDir: "{app}"; Fla
 Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\logfileurl.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bbcminute3.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\ffmpeg.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -130,7 +131,7 @@ var
 begin
     if  CurStep=ssPostInstall then
     begin
-        SetLength(params, 4);
+        SetLength(params, 6);
         params[0] := 'postLogs=';
         if PostLogs.Checked then begin
             params[0] := params[0] + '1';
@@ -140,15 +141,16 @@ begin
         end;
         params[1] := 'station=' + Station.Text;
         params[2] := 'city=' + City.Text;
-        LoadStringFromFile(ExpandConstant('{app}/logfileurl.txt'), url);
-        params[3] := 'logUrl='+url;
+        params[3] := 'logUrl='+GetIniString('Log', 'LogUrl', '', ExpandConstant('{app}/bbcminute3.ini'));
+        params[4] := 'Basename='+GetIniString('Source', 'Basename', '', ExpandConstant('{app}/bbcminute3.ini'));
+        params[5] := 'Prefix='+GetIniString('Source', 'Prefix', '', ExpandConstant('{app}/bbcminute3.ini'));
         SaveStringsToUTF8File(ExpandConstant('{app}/init.properties'), params, false);
    end;
 end;
 
 procedure DeletePropertiesFile();
 begin
-  DeleteFile(ExpandConstant('{app}/init.properties'));
+  (*DeleteFile(ExpandConstant('{app}/init.properties'));   *)
 end;
 
 end.

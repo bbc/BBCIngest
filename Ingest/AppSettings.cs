@@ -94,6 +94,9 @@ namespace Ingest
         public int BroadcastMinuteAfter { get; set; }
 
         [CategoryAttribute("Target")]
+        public Codec Transcode { get; set; }
+
+        [CategoryAttribute("Target")]
         public bool SafePublishing { get; set; }
 
         private string publish;
@@ -210,6 +213,7 @@ namespace Ingest
                     //Discdate = "HHmm";
                     Discdate = "";
                     BroadcastMinuteAfter = 0;
+                    Transcode = Codec.None;
                     SafePublishing = true;
 
                     PostLogs = true;

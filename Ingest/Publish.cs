@@ -1,8 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Ingest
 {
+    public enum Codec { None, mp2, mp3 };
+
     public interface IPublishSettings
     {
         bool SafePublishing { get; set; }
@@ -12,9 +16,10 @@ namespace Ingest
         string Suffix { get; set; }
         bool UseLocaltime { get; set; }
         bool UpdateAllEditions { get; set; }
+        Codec Transcode { get; set; }
     }
 
-    class Publish
+    public class Publish
     {
         private event TerseMessageDelegate terseMessage;
         private event ChattyMessageDelegate chattyMessage;
@@ -56,7 +61,7 @@ namespace Ingest
         {
             chattyMessage("Publishing ...");
             publishOne(path, epoch);
-            if(conf.UpdateAllEditions && conf.Discdate.Length>0)
+            if (conf.UpdateAllEditions && conf.Discdate.Length > 0)
             {
                 publishAllButOne(path, epoch, all);
             }
@@ -70,24 +75,25 @@ namespace Ingest
                 return;
             }
             string savename = conf.Publish + discname(t);
+            string tempname = savename;
             if (conf.SafePublishing)
             {
-                string tempname = conf.Publish + conf.Basename + ".tmp";
-                try
-                {
-                    FileInfo pf = f.CopyTo(tempname, true);
-                    // if no exception we are OK to overwrite
-                    System.IO.File.Delete(savename);
-                    pf.MoveTo(savename);
-                }
-                catch
-                {
-                    terseMessage("error writing to " + conf.Publish + " folder");
-                }
+                tempname = conf.Publish + conf.Basename + ".tmp";
+            }
+            FileInfo pf = new FileInfo(tempname);
+            if (conf.Transcode == Codec.None)
+            {
+                pf = f.CopyTo(tempname, true);
             }
             else
             {
-                f.CopyTo(savename, true);
+                transCodeTo(path, tempname, conf.Transcode);
+
+            }
+            if (conf.SafePublishing)
+            {
+                System.IO.File.Delete(savename);
+                pf.MoveTo(savename);
             }
         }
 
@@ -110,5 +116,41 @@ namespace Ingest
             }
         }
 
+        public ProcessStartInfo getPSI(string source, string dest, Codec codec)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.CreateNoWindow = false;
+            startInfo.UseShellExecute = false;
+            Assembly a = Assembly.GetEntryAssembly();
+            if(a == null)
+            {
+                startInfo.FileName = "ffmpeg.exe";
+            }
+            else
+            {
+                startInfo.FileName = a.Location + "\\ffmpeg.exe";
+            }
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            startInfo.Arguments = "-i " + source + " -acodec " + codec + " " + dest;
+            return startInfo;
+        }
+
+        public void transCodeTo(string source, string dest, Codec codec)
+        {
+            ProcessStartInfo startInfo = getPSI(source, dest, codec);
+            try
+            {
+                // Start the process with the info we specified.
+                // Call WaitForExit and then the using statement will close.
+                using (Process exeProcess = Process.Start(startInfo))
+                {
+                    exeProcess.WaitForExit();
+                }
+            }
+            catch
+            {
+                // Log error.
+            }
+        }
     }
 }

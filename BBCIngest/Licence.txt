@@ -1,6 +1,31 @@
-The British Broadcasting Corporation (the “BBC”) releases this software into the public domain and permits the free and unencumbered use of the software on a perpetual, worldwide, non-exclusive, no charge basis, on the terms on this licence (the “Licence”).  
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means. This Licence shall be included in all redistribution and all copies of this software in whole or in part. 
-This software is provided “as is”, without warranties or conditions of any kind, either express or implied, including but not limited to any implied warranties of merchantability, fitness for  purpose, the absence of errors, completeness and non-infringement. The user of this software is solely responsible for determining the appropriateness of using or redistributing this software and will assume all risks associated with its use of this software. 
-In no event shall the BBC be liable for any claim, damages or any other liability, whether in an action of contract, tort (including negligence) or otherwise, arising from, out of or in connection with this software or the use or other dealings in this software howsoever caused, including without limitation, any direct, indirect, special, incidental or consequential damages of any kind. 
-This License does not grant any permission to use the trade names, logos, service marks or any other trademarks of the BBC and the name of the BBC may not be used to endorse or promote any products or services, or in any way that might bring the BBC into disrepute. 
-This License does not grant the user of this software any permission to access, nor to make use of, any BBC editorial content.
+The British Broadcasting Corporation (the "BBC") releases this software into
+the public domain and permits the free and unencumbered use of the software
+on a perpetual, worldwide, non-exclusive, no charge basis, on the terms on
+this licence (the "Licence").
+  
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means. This Licence shall be included
+in all redistribution and all copies of this software in whole or in part. 
+
+This software is provided "as is", without warranties or conditions of any
+kind, either express or implied, including but not limited to any implied
+warranties of merchantability, fitness for  purpose, the absence of errors,
+completeness and non-infringement. The user of this software is solely
+responsible for determining the appropriateness of using or redistributing
+this software and will assume all risks associated with its use of this software. 
+
+In no event shall the BBC be liable for any claim, damages or any other
+liability, whether in an action of contract, tort (including negligence) or
+otherwise, arising from, out of or in connection with this software or the use
+or other dealings in this software howsoever caused, including without
+limitation, any direct, indirect, special, incidental or consequential damages
+of any kind. 
+
+This License does not grant any permission to use the trade names, logos,
+service marks or any other trademarks of the BBC and the name of the BBC may
+not be used to endorse or promote any products or services, or in any way that
+might bring the BBC into disrepute. 
+
+This License does not grant the user of this software any permission to access,
+nor to make use of, any BBC editorial content.
