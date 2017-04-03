@@ -198,8 +198,8 @@ namespace Ingest
                     Archive = settingsPath; // @"C:\archive\";
 
                     MinutesBefore = 4;
-                    Prefix = "http://wsodprogrf.bbc.co.uk/bd/tx/bbcminute/mp3/";
-                    Basename = "bbcminute";
+                    Prefix = "";
+                    Basename = "";
                     Webdate = "yyMMddHHmm";
                     Suffix = "mp3";
 
