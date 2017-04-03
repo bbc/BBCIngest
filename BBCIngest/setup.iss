@@ -44,7 +44,7 @@ Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.dll"; DestDir: "{app}"; Fla
 Source: ".\bin\Release\Microsoft.Win32.TaskScheduler.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\Release\taglib-sharp.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bbcminute3.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bbcminutew.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\ffmpeg.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -126,12 +126,13 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 var
  params     : TArrayOfString;
- url        : AnsiString;
+ ini        : String;
  resultCode : Integer;
 begin
+    ini := ExpandConstant('{app}/bbcminutew.ini');
     if  CurStep=ssPostInstall then
     begin
-        SetLength(params, 6);
+        SetLength(params, 8);
         params[0] := 'postLogs=';
         if PostLogs.Checked then begin
             params[0] := params[0] + '1';
@@ -141,9 +142,11 @@ begin
         end;
         params[1] := 'station=' + Station.Text;
         params[2] := 'city=' + City.Text;
-        params[3] := 'logUrl='+GetIniString('Log', 'LogUrl', '', ExpandConstant('{app}/bbcminute3.ini'));
-        params[4] := 'Basename='+GetIniString('Source', 'Basename', '', ExpandConstant('{app}/bbcminute3.ini'));
-        params[5] := 'Prefix='+GetIniString('Source', 'Prefix', '', ExpandConstant('{app}/bbcminute3.ini'));
+        params[3] := 'logUrl='+GetIniString('Log', 'LogUrl', '', ini);
+        params[4] := 'Basename='+GetIniString('Source', 'Basename', '', ini);
+        params[5] := 'Prefix='+GetIniString('Source', 'Prefix', '', ini);
+        params[6] := 'Prefix='+GetIniString('Source', 'Suffix', '', ini);
+        params[7] := 'Prefix='+GetIniString('Source', 'Webdate', '', ini);
         SaveStringsToUTF8File(ExpandConstant('{app}/init.properties'), params, false);
    end;
 end;
