@@ -63,3 +63,5 @@ If SafePublishing is set (recommended) the programme publishes to a temporary fi
 If Publish All Versions is set then all scheduled versions are published each time. This is important if you don't use the Task Scheduler.
 
 If Run As Service is set then the task will be installed as a service. You need to run the program with Admin privileges for this to work.
+
+From version 2.2, if the Target Extension is set to mp2 then the file will be encoded to MPEG-1 Layer II at 384 kbit/s and resampled to 44.1 kHz.
