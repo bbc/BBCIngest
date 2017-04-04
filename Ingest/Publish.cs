@@ -125,7 +125,7 @@ namespace Ingest
         public ProcessStartInfo getPSI(string source, string dest)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.CreateNoWindow = false;
+            startInfo.CreateNoWindow = true;
             startInfo.UseShellExecute = false;
             Assembly a = Assembly.GetEntryAssembly();
             if (a == null)
@@ -138,7 +138,7 @@ namespace Ingest
                 startInfo.FileName = fi.DirectoryName + @"\ffmpeg.exe";
             }
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            startInfo.Arguments = "-i " + source + " -ar 44100 -b:a 256k -acodec libtwolame -f mp2 " + dest;
+            startInfo.Arguments = "-i " + source + " -af aresample=osr=44100:filter_size=256 -b:a 384k -acodec libtwolame -f mp2 " + dest;
             return startInfo;
         }
 
