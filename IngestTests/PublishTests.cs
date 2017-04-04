@@ -17,7 +17,7 @@ namespace Ingest.Tests
             conf.Basename = "test";
             conf.Discdate = "HHmm";
             Publish uut = new Publish(conf);
-            Assert.AreEqual(conf.Basename+"0000."+conf.Suffix, uut.discname(t));
+            Assert.AreEqual(conf.Basename+"0000."+conf.Extension, uut.discname(t));
         }
 
         [TestMethod()]
@@ -27,11 +27,11 @@ namespace Ingest.Tests
             conf.Basename = "test";
             conf.Discdate = "HHmm";
             Publish uut = new Publish(conf);
-            ProcessStartInfo startInfo = uut.getPSI("1", "2", Codec.mp2);
+            ProcessStartInfo startInfo = uut.getPSI("1", "2");
             Assert.AreEqual("ffmpeg.exe", startInfo.FileName);
-            Assert.AreEqual("-i 1 -acodec mp2 2", startInfo.Arguments);
+            Assert.AreEqual("-i 1 -ar 44100 -b 256k -acodec libtwolame -f mp2 2", startInfo.Arguments);
             startInfo.FileName = Directory.GetCurrentDirectory()+@"\ffmpeg.exe";
-            uut.transCodeTo(startInfo);
+            uut.encodeMP2(startInfo);
         }
     }
 }

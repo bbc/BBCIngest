@@ -75,6 +75,9 @@ namespace Ingest
         public string Prefix { get; set; }
 
         [CategoryAttribute("Source")]
+        public string Suffix { get; set; }
+
+        [CategoryAttribute("Source")]
         public string Webdate { get; set; }
         [CategoryAttribute("Source")]
         public string Minutepattern { get; set; }
@@ -82,8 +85,9 @@ namespace Ingest
         [CategoryAttribute("Source")]
         public string Hourpattern { get; set; }
 
-        [CategoryAttribute("Source")]
-        public string Suffix { get; set; }
+        [CategoryAttribute("Target")]
+        public string Extension { get; set; }
+
         [CategoryAttribute("Target")]
         public string Discdate { get; set; }
 
@@ -92,9 +96,6 @@ namespace Ingest
 
         [CategoryAttribute("Target")]
         public int BroadcastMinuteAfter { get; set; }
-
-        [CategoryAttribute("Target")]
-        public Codec Transcode { get; set; }
 
         [CategoryAttribute("Target")]
         public bool SafePublishing { get; set; }
@@ -204,7 +205,7 @@ namespace Ingest
                     Prefix = "";
                     Basename = "";
                     Webdate = "yyMMddHHmm";
-                    Suffix = "mp3";
+                    Extension = "mp3";
 
                     Hourpattern = "*";
                     Minutepattern = "00,30";
@@ -212,8 +213,8 @@ namespace Ingest
                     Publish = @"C:\source\";
                     //Discdate = "HHmm";
                     Discdate = "";
+                    Extension = "mp3";
                     BroadcastMinuteAfter = 0;
-                    Transcode = Codec.None;
                     SafePublishing = true;
 
                     PostLogs = true;

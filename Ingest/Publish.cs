@@ -5,18 +5,15 @@ using System.Reflection;
 
 namespace Ingest
 {
-    public enum Codec { None, mp2, mp3 };
-
     public interface IPublishSettings
     {
         bool SafePublishing { get; set; }
         string Publish { get; set; }
         string Basename { get; set; }
+        string Extension { get; set; }
         string Discdate { get; set; }
-        string Suffix { get; set; }
         bool UseLocaltime { get; set; }
         bool UpdateAllEditions { get; set; }
-        Codec Transcode { get; set; }
     }
 
     public class Publish
@@ -42,6 +39,11 @@ namespace Ingest
 
         public string discname(DateTime t)
         {
+            return discbasename(t) + "." + conf.Extension;
+        }
+
+        public string discbasename(DateTime t)
+        {
             string s = "";
             if (conf.Discdate != "") // allow empty Discdate to force fixed discname
             {
@@ -54,7 +56,7 @@ namespace Ingest
                     s = t.ToString(conf.Discdate);
                 }
             }
-            return conf.Basename + s + "." + conf.Suffix;
+            return conf.Basename + s;
         }
 
         public void publish(string path, DateTime epoch, DateTime[] all)
@@ -67,9 +69,9 @@ namespace Ingest
             }
         }
 
-        public void publishOne(string path, DateTime t)
+        public void publishOne(string source, DateTime t)
         {
-            FileInfo f = new FileInfo(path);
+            FileInfo f = new FileInfo(source);
             if (f.Exists == false)
             {
                 return;
@@ -81,14 +83,13 @@ namespace Ingest
                 tempname = conf.Publish + conf.Basename + ".tmp";
             }
             FileInfo pf = new FileInfo(tempname);
-            if (conf.Transcode == Codec.None)
+            if (conf.Extension == "mp2")
             {
-                pf = f.CopyTo(tempname, true);
+                encodeMP2(source, tempname);
             }
             else
             {
-                transCodeTo(path, tempname, conf.Transcode);
-
+                pf = f.CopyTo(tempname, true);
             }
             if (conf.SafePublishing)
             {
@@ -116,12 +117,12 @@ namespace Ingest
             }
         }
 
-        public void transCodeTo(string source, string dest, Codec codec)
+        public void encodeMP2(string source, string dest)
         {
-            transCodeTo(getPSI(source, dest, codec));
+            encodeMP2(getPSI(source, dest));
         }
 
-        public ProcessStartInfo getPSI(string source, string dest, Codec codec)
+        public ProcessStartInfo getPSI(string source, string dest)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.CreateNoWindow = false;
@@ -136,13 +137,12 @@ namespace Ingest
                 FileInfo fi = new FileInfo(a.Location);
                 startInfo.FileName = fi.DirectoryName + @"\ffmpeg.exe";
             }
-            terseMessage(startInfo.Arguments);
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            startInfo.Arguments = "-i " + source + " -acodec " + codec + " " + dest;
+            startInfo.Arguments = "-i " + source + " -ar 44100 -b 256k -acodec libtwolame -f mp2 " + dest;
             return startInfo;
         }
 
-        public void transCodeTo(ProcessStartInfo startInfo)
+        public void encodeMP2(ProcessStartInfo startInfo)
         {
             try
             {
