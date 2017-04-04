@@ -138,7 +138,7 @@ namespace Ingest
                 startInfo.FileName = fi.DirectoryName + @"\ffmpeg.exe";
             }
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            startInfo.Arguments = "-i " + source + " -ar 44100 -b 256k -acodec libtwolame -f mp2 " + dest;
+            startInfo.Arguments = "-i " + source + " -ar 44100 -b:a 256k -acodec libtwolame -f mp2 " + dest;
             return startInfo;
         }
 
