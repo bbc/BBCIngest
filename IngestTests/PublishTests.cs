@@ -17,7 +17,7 @@ namespace Ingest.Tests
             conf.Basename = "test";
             conf.Discdate = "HHmm";
             Publish uut = new Publish(conf);
-            Assert.AreEqual(conf.Basename+"0000."+conf.Extension, uut.discname(t));
+            Assert.AreEqual(conf.Basename+"0000."+conf.PublishFormat, uut.discname(t));
         }
 
         [TestMethod()]

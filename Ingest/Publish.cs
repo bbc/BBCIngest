@@ -8,9 +8,10 @@ namespace Ingest
     public interface IPublishSettings
     {
         bool SafePublishing { get; set; }
-        string Publish { get; set; }
         string Basename { get; set; }
-        string Extension { get; set; }
+        string PublishFolder { get; set; }
+        string PublishName { get; set; }
+        string PublishFormat { get; set; }
         string Discdate { get; set; }
         bool UseLocaltime { get; set; }
         bool UpdateAllEditions { get; set; }
@@ -39,7 +40,7 @@ namespace Ingest
 
         public string discname(DateTime t)
         {
-            return discbasename(t) + "." + conf.Extension;
+            return discbasename(t) + "." + conf.PublishFormat;
         }
 
         public string discbasename(DateTime t)
@@ -56,7 +57,7 @@ namespace Ingest
                     s = t.ToString(conf.Discdate);
                 }
             }
-            return conf.Basename + s;
+            return conf.PublishName + s;
         }
 
         public void publish(string path, DateTime epoch, DateTime[] all)
@@ -76,14 +77,14 @@ namespace Ingest
             {
                 return;
             }
-            string savename = conf.Publish + discname(t);
+            string savename = conf.PublishFolder + discname(t);
             string tempname = savename;
             if (conf.SafePublishing)
             {
-                tempname = conf.Publish + conf.Basename + ".tmp";
+                tempname = conf.PublishFolder + "bbcingest.tmp";
             }
             FileInfo pf = new FileInfo(tempname);
-            if (conf.Extension == "mp2")
+            if (conf.PublishFormat == "mp2")
             {
                 encodeMP2(source, tempname);
             }

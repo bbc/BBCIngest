@@ -13,6 +13,8 @@ namespace Ingest
         string Webdate { get; set; }
         string Suffix { get; set; }
         string dateTimeToString(string format, DateTime epoch);
+        string PublishName { get; set; }
+        string PublishFormat { get; set; }
     }
 
     class Fetch
@@ -52,7 +54,12 @@ namespace Ingest
 
         public string webname(DateTime t)
         {
-            return conf.Basename + conf.dateTimeToString(conf.Webdate, t) + "." + conf.Suffix;
+            string n = conf.Basename;
+            if (conf.Webdate != "")
+                n += conf.dateTimeToString(conf.Webdate, t);
+            if (conf.Suffix != "")
+                n += "." + conf.Suffix;
+            return n;
         }
 
         private string url(DateTime epoch)
@@ -62,7 +69,7 @@ namespace Ingest
 
         public string lastWeHave()
         {
-            return conf.Archive + conf.Basename + "." + conf.Suffix;
+            return conf.Archive + conf.PublishName + "." + conf.PublishFormat;
         }
 
         /*
@@ -109,7 +116,7 @@ namespace Ingest
         public async Task save(DateTime t)
         {
             DateTime before = DateTime.UtcNow;
-            string tmpname = conf.Archive + conf.Basename + ".tmp";
+            string tmpname = conf.Archive + "bbcingest.tmp";
             HttpResponseMessage m = await hc.GetAsync(url(t));
             Stream ds = System.IO.File.Open(tmpname, FileMode.OpenOrCreate);
             await m.Content.CopyToAsync(ds);
@@ -143,7 +150,8 @@ namespace Ingest
             {
                 TagLib.File tf = TagLib.File.Create(f.FullName);
                 string s = tf.Tag.Comment;
-                if (s != null) {
+                if (s != null)
+                {
                     dt = DateTime.Parse(s.Replace("UTC", "GMT"));
                 }
                 tf.Dispose();
@@ -163,7 +171,7 @@ namespace Ingest
                 }
                 else
                 {
-                    showEditionStatus("no file yet");
+                    showEditionStatus("No file yet");
                 }
                 return false; // might want to but internet might not be available
             }
@@ -191,7 +199,7 @@ namespace Ingest
         public async Task reFetchIfNeeded(DateTime epoch)
         {
             bool needed = await shouldRefetch(epoch);
-            if(needed)
+            if (needed)
                 await save(epoch);
         }
     }

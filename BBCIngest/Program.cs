@@ -25,7 +25,7 @@ namespace BBCIngest
             Application.SetCompatibleTextRenderingDefault(false);
             AppSettings conf = new AppSettings();
             conf.LoadAppSettings();
-            Directory.CreateDirectory(conf.Publish);
+            Directory.CreateDirectory(conf.PublishFolder);
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
             //MessageBox.Show(arg, "BBCIngest", MessageBoxButtons.OK);
