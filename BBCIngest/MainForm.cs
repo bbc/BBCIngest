@@ -106,12 +106,12 @@ namespace BBCIngest
             {
                 if (taskInstalled)
                 {
-                    MessageBox.Show("Files will be fetched in the background");
+                    MessageBox.Show("Files will be fetched in the background", "BBC Ingest");
                     Application.Exit();
                 }
                 else
                 {
-                    MessageBox.Show("Install task to fetch files in the background");
+                    MessageBox.Show("Install task to fetch files in the background", "BBC Ingest");
                 }
             }
         }
@@ -124,7 +124,7 @@ namespace BBCIngest
             {
                 if(schedule.installTaskAsService(td)==false)
                 {
-                    setLine1("either set RunAsService false in settings or run this program with Admin privileges");
+                    setLine1("Either set RunAsService false in settings or run this program with Admin privileges");
                     taskInstalled = false;
                     return;
                 }
@@ -165,6 +165,5 @@ namespace BBCIngest
             }
             return fetcher.showLatest();
         }
-
     }
 }

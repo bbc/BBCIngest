@@ -7,6 +7,7 @@ namespace BBCIngest
 {
     class TrayNotify
     {
+        private bool showicon = false;
         NotifyIcon notifyIcon;
         private class MyContainer : IContainer
         {
@@ -46,9 +47,9 @@ namespace BBCIngest
             notifyIcon = new NotifyIcon(components)
             {
                 Icon = Properties.Resources.main,
-                Text = "Hello",
+                Text = "BBC Ingest",
                 BalloonTipText = "BBC Ingest",
-                Visible = true
+                Visible = showicon
             };
             fetcher.listenForTerseMessages(new TerseMessageDelegate(terse));
             fetcher.listenForChattyMessages(new ChattyMessageDelegate(chatty));
