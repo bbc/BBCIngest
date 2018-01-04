@@ -63,7 +63,7 @@ namespace BBCIngest
                 Application.Run(new MainForm(conf));
             }
         }
-
+       
         static async Task MainTask(AppSettings conf)
         {
             FetchAndPublish fetcher = new FetchAndPublish(conf);

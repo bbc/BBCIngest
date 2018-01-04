@@ -64,7 +64,7 @@ namespace Ingest
             int d = (int)t.Subtract(DateTime.UtcNow).TotalMilliseconds;
             if (d > 0)
             {
-                terseMessage("waiting until " + t.ToString("t"));
+                terseMessage("Waiting until " + t.ToString("t"));
                 await Task.Delay(d);
             }
         }
@@ -142,7 +142,7 @@ namespace Ingest
             }
             else
             {
-                message = "no usable file";
+                message = "No usable file";
             }
             terseMessage(message);
             log.WriteLine(message);

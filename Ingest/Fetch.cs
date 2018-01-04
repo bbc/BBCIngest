@@ -91,7 +91,7 @@ namespace Ingest
                 return null;
             DateTime dt = r.Value.DateTime;
             if (dt < epoch.AddMinutes(-10))
-                return null;
+                return null; //remote file is too old - we don't want it
             chattyMessage(dt + " edition is available");
             return dt;
         }
@@ -107,7 +107,7 @@ namespace Ingest
                     return lmd;
                 }
                 chattyMessage("Waiting for " + t.ToString("HH:mm") + " edition at " + DateTime.UtcNow.ToString("HH:mm:ss"));
-                await Task.Delay(10 * 1000);
+                await Task.Delay(60 * 1000);
             }
             while (DateTime.UtcNow < end);
             return null;
@@ -117,9 +117,11 @@ namespace Ingest
         {
             DateTime before = DateTime.UtcNow;
             string tmpname = conf.Archive + "bbcingest.tmp";
-            HttpResponseMessage m = await hc.GetAsync(url(t));
+            var u = url(t);
+            
+            HttpResponseMessage m = await hc.GetAsync(u);
             Stream ds = System.IO.File.Open(tmpname, FileMode.OpenOrCreate);
-            await m.Content.CopyToAsync(ds);
+            await m.Content.CopyToAsync(ds);    
             ds.Dispose();
             FileInfo f = new FileInfo(tmpname);
             string savename = lastWeHave();
@@ -148,13 +150,18 @@ namespace Ingest
             DateTime dt = f.LastWriteTimeUtc;
             if (f.Extension == ".mp3")
             {
-                TagLib.File tf = TagLib.File.Create(f.FullName);
-                string s = tf.Tag.Comment;
-                if (s != null)
-                {
-                    dt = DateTime.Parse(s.Replace("UTC", "GMT"));
+                try
+                {   //added to catch exceptions when file does not contain any ID3 tags
+                    //use the default lastwritetimeutc instead
+                    TagLib.File tf = TagLib.File.Create(f.FullName);
+                    string s = tf.Tag.Comment;
+                    if (s != null)
+                    {
+                        dt = DateTime.Parse(s.Replace("UTC", "GMT"));
+                    }
+                    tf.Dispose();
                 }
-                tf.Dispose();
+                catch { }
             }
             return dt;
         }
