@@ -5,13 +5,14 @@ using System.Reflection;
 using System.Xml.Serialization;
 using static System.Environment;
 
+
 namespace Ingest
 {
     public class AppSettings : IPublishSettings, IFetchSettings, IScheduleSettings
     {
         public bool appSettingsChanged;
         private string defaultDir;
-        private string settingsPath = GetFolderPath(SpecialFolder.LocalApplicationData);
+        private string settingsPath = GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         private event TerseMessageDelegate terseMessage;
 
         public void addTerseMessageListener(TerseMessageDelegate m)
@@ -86,9 +87,6 @@ namespace Ingest
         public string Hourpattern { get; set; }
 
         [CategoryAttribute("Target")]
-        public string Extension { get; set; }
-
-        [CategoryAttribute("Target")]
         public string Discdate { get; set; }
 
         [CategoryAttribute("Target")]
@@ -100,20 +98,26 @@ namespace Ingest
         [CategoryAttribute("Target")]
         public bool SafePublishing { get; set; }
 
-        private string publish;
+        private string publishFolder;
         [CategoryAttribute("Target")]
-        public string Publish
+        public string PublishFolder
         {
             get
             {
-                return addDirectorSeparatorIfNeeded(publish);
+                return addDirectorSeparatorIfNeeded(publishFolder);
             }
 
             set
             {
-                publish = value;
+                publishFolder = value;
             }
         }
+
+        [CategoryAttribute("Source")]
+        public string PublishName { get; set; }
+
+        [CategoryAttribute("Target")]
+        public string PublishFormat { get; set; }
 
         private bool updateAllEditions;
         [CategoryAttribute("Target")]
@@ -138,7 +142,7 @@ namespace Ingest
             for (int i = 0; i < p.Length; i++)
             {
                 Object o = p[i].GetValue(this);
-                if(o != null)
+                if (o != null)
                 {
                     int l = o.ToString().Length;
                     if (l > w)
@@ -174,7 +178,7 @@ namespace Ingest
             try
             {
                 sz = new XmlSerializer(typeof(AppSettings));
-                FileInfo fi = new FileInfo(settingsPath+@"\BBCIngest.config");
+                FileInfo fi = new FileInfo(settingsPath + @"\BBCIngest.config");
                 if (fi.Exists)
                 {
                     fs = fi.OpenRead();
@@ -196,7 +200,7 @@ namespace Ingest
                         fi.Delete();
                     }
                 }
-                if(!fileExists)
+                if (!fileExists)
                 {
                     Logfolder = settingsPath; // @"C:\log\";
                     Archive = settingsPath; // @"C:\archive\";
@@ -205,15 +209,15 @@ namespace Ingest
                     Prefix = "";
                     Basename = "";
                     Webdate = "yyMMddHHmm";
-                    Extension = "mp3";
+                    PublishFormat = "mp3";
 
                     Hourpattern = "*";
                     Minutepattern = "00,30";
 
-                    Publish = @"C:\source\";
+                    PublishFolder = @"C:\source\";
+                    PublishName = "audio";
                     //Discdate = "HHmm";
                     Discdate = "";
-                    Extension = "mp3";
                     BroadcastMinuteAfter = 0;
                     SafePublishing = true;
 
@@ -226,7 +230,7 @@ namespace Ingest
                     RunInForeground = false;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 terseMessage(ex.Message);
             }
