@@ -94,7 +94,7 @@ begin
 
   Station := TNewEdit.Create(UserPage);
   Station.Top := ScaleY(y);
-  Station.Left := ScaleX(48);
+  Station.Left := ScaleX(42);
   Station.Width := UserPage.SurfaceWidth div 2 - ScaleX(8);
   Station.Text := 'Station';
   Station.Parent := UserPage.Surface;
@@ -108,7 +108,7 @@ begin
 
   City := TNewEdit.Create(UserPage);
   City.Top := ScaleY(y);
-  City.Left := ScaleX(48);
+  City.Left := ScaleX(42);
   City.Width := UserPage.SurfaceWidth div 2 - ScaleX(8);
   City.Text := 'City';
   City.Parent := UserPage.Surface;
