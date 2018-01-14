@@ -96,6 +96,9 @@ namespace Ingest
         public int BroadcastMinuteAfter { get; set; }
 
         [CategoryAttribute("Target")]
+        public int RetryIntervalSeconds { get; set; }
+
+        [CategoryAttribute("Target")]
         public bool SafePublishing { get; set; }
 
         private string publishFolder;
@@ -219,6 +222,7 @@ namespace Ingest
                     //Discdate = "HHmm";
                     Discdate = "";
                     BroadcastMinuteAfter = 0;
+                    RetryIntervalSeconds = 60;
                     SafePublishing = true;
 
                     PostLogs = true;

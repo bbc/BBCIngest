@@ -15,6 +15,7 @@ namespace Ingest
         string dateTimeToString(string format, DateTime epoch);
         string PublishName { get; set; }
         string PublishFormat { get; set; }
+        int RetryIntervalSeconds { get; set; }
     }
 
     class Fetch
@@ -107,7 +108,7 @@ namespace Ingest
                     return lmd;
                 }
                 chattyMessage("Waiting for " + t.ToString("HH:mm") + " edition at " + DateTime.UtcNow.ToString("HH:mm:ss"));
-                await Task.Delay(60 * 1000);
+                await Task.Delay(1000 * conf.RetryIntervalSeconds);
             }
             while (DateTime.UtcNow < end);
             return null;
