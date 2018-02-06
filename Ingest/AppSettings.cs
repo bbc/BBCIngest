@@ -13,12 +13,28 @@ namespace Ingest
         public bool appSettingsChanged;
         private string defaultDir;
         private string settingsPath = GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        public string SettingsPath
+        {
+            get
+            {
+                return settingsPath;
+            }
+            set
+            {
+                settingsPath = value;
+            }
+        }
+
+
         private event TerseMessageDelegate terseMessage;
 
         public void addTerseMessageListener(TerseMessageDelegate m)
         {
             this.terseMessage += m;
         }
+        
+
+
 
         private string archive;
         public string Archive
