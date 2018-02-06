@@ -24,6 +24,10 @@ namespace BBCIngest
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             AppSettings conf = new AppSettings();
+            if (args.Length == 2)
+            {
+                conf.SettingsPath = args[1];
+            }
             conf.LoadAppSettings();
             Directory.CreateDirectory(conf.PublishFolder);
             Directory.CreateDirectory(conf.Archive);
