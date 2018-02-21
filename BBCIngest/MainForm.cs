@@ -118,8 +118,12 @@ namespace BBCIngest
 
         private void createTask(ScheduleInstaller schedule)
         {
-            string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            TaskDefinition td = schedule.createTaskDefinition(path);
+            string progPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string arguments = "once";
+            if(conf.SettingsPath != conf.DefaultSettingsPath) {
+                arguments = arguments + " " + conf.SettingsPath;
+            }
+            TaskDefinition td = schedule.createTaskDefinition(progPath, arguments);
             if(conf.RunAsService)
             {
                 if(schedule.installTaskAsService(td)==false)
