@@ -44,17 +44,17 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::BBCIngest.Properties.Resources.bbcworldservice;
-            this.pictureBox1.Location = new System.Drawing.Point(47, 22);
+            this.pictureBox1.Image = global::BBCIngest.Properties.Resources.ws_tile;
+            this.pictureBox1.Location = new System.Drawing.Point(8, 12);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(302, 170);
+            this.pictureBox1.Size = new System.Drawing.Size(381, 170);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(24, 199);
+            this.label1.Location = new System.Drawing.Point(8, 190);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(0, 13);
             this.label1.TabIndex = 1;
@@ -62,14 +62,14 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(24, 216);
+            this.label2.Location = new System.Drawing.Point(8, 207);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(0, 13);
             this.label2.TabIndex = 2;
             // 
             // buttonSettings
             // 
-            this.buttonSettings.Location = new System.Drawing.Point(13, 232);
+            this.buttonSettings.Location = new System.Drawing.Point(8, 232);
             this.buttonSettings.Name = "buttonSettings";
             this.buttonSettings.Size = new System.Drawing.Size(67, 23);
             this.buttonSettings.TabIndex = 3;
@@ -79,7 +79,7 @@
             // 
             // buttonRfTS
             // 
-            this.buttonRfTS.Location = new System.Drawing.Point(86, 232);
+            this.buttonRfTS.Location = new System.Drawing.Point(82, 232);
             this.buttonRfTS.Name = "buttonRfTS";
             this.buttonRfTS.Size = new System.Drawing.Size(131, 23);
             this.buttonRfTS.TabIndex = 4;
@@ -95,7 +95,7 @@
             // 
             // buttonRemoveTasks
             // 
-            this.buttonRemoveTasks.Location = new System.Drawing.Point(224, 231);
+            this.buttonRemoveTasks.Location = new System.Drawing.Point(219, 232);
             this.buttonRemoveTasks.Name = "buttonRemoveTasks";
             this.buttonRemoveTasks.Size = new System.Drawing.Size(101, 23);
             this.buttonRemoveTasks.TabIndex = 7;
@@ -105,7 +105,7 @@
             // 
             // buttonExitOrStart
             // 
-            this.buttonExitOrStart.Location = new System.Drawing.Point(331, 230);
+            this.buttonExitOrStart.Location = new System.Drawing.Point(326, 232);
             this.buttonExitOrStart.Name = "buttonExitOrStart";
             this.buttonExitOrStart.Size = new System.Drawing.Size(63, 23);
             this.buttonExitOrStart.TabIndex = 8;

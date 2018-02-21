@@ -9,7 +9,7 @@ namespace Ingest
         {
         }
 
-        public TaskDefinition createTaskDefinition(String execPath)
+        public TaskDefinition createTaskDefinition(String execPath, String arguments)
         {
             using (TaskService ts = new TaskService())
             {
@@ -61,7 +61,7 @@ namespace Ingest
                 }
 
                 // Add an action that will launch BBCIngest whenever the trigger fires
-                td.Actions.Add(new ExecAction(execPath, "once", null));
+                td.Actions.Add(new ExecAction(execPath, arguments, null));
                 return td;
             }
         }
@@ -71,10 +71,9 @@ namespace Ingest
             using (TaskService ts = new TaskService())
             {
                 // Register the task in the root folder
-                const string taskName = "BBCIngest";
                 try
                 {
-                    ts.RootFolder.RegisterTaskDefinition(taskName, td,
+                    ts.RootFolder.RegisterTaskDefinition(conf.TaskName, td,
                        TaskCreation.CreateOrUpdate, "SYSTEM", null,
                         TaskLogonType.ServiceAccount);
                 }
@@ -91,8 +90,7 @@ namespace Ingest
             using (TaskService ts = new TaskService())
             {
                 // Register the task in the root folder
-                const string taskName = "BBCIngest";
-                ts.RootFolder.RegisterTaskDefinition(taskName, td);
+                ts.RootFolder.RegisterTaskDefinition(conf.TaskName, td);
             }
         }
 
@@ -100,7 +98,7 @@ namespace Ingest
         {
             using (TaskService ts = new TaskService())
             {
-                Task t = ts.GetTask("BBCIngest");
+                Task t = ts.GetTask(conf.TaskName);
                 if (t != null)
                 {
                     t.Run();
@@ -112,9 +110,9 @@ namespace Ingest
         {
             using (TaskService ts = new TaskService())
             {
-                if (ts.GetTask("BBCIngest") != null)
+                if (ts.GetTask(conf.TaskName) != null)
                 {
-                    ts.RootFolder.DeleteTask("BBCIngest");
+                    ts.RootFolder.DeleteTask(conf.TaskName);
                 }
             }
         }
@@ -123,7 +121,7 @@ namespace Ingest
         {
             using (TaskService ts = new TaskService())
             {
-                Task t = ts.GetTask("BBCIngest");
+                Task t = ts.GetTask(conf.TaskName);
                 if (t != null)
                 {
                     return t.NextRunTime;

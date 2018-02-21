@@ -49,7 +49,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\main.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Win32.TaskScheduler, Version=2.5.21.0, Culture=neutral, PublicKeyToken=0d013ddd5178a2ae, processorArchitecture=MSIL">
@@ -120,8 +121,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Licence.txt" />
+    <Content Include="Resources\favicon.ico" />
     <Content Include="Resources\main.ico" />
     <Content Include="Resources\ws.png" />
+    <None Include="Resources\ws_tile.jpg" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ingest\Ingest.csproj">

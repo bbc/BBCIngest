@@ -29,7 +29,7 @@ namespace Ingest
         internal void write(string logmessage)
         {
             DateTime dt = DateTime.UtcNow;
-            StreamWriter log = System.IO.File.AppendText(conf.Logfolder + conf.Basename + ".log");
+            StreamWriter log = System.IO.File.AppendText(conf.Logfolder + "bbcingest.log");
             log.WriteLine(dt.ToString() + " "+ logmessage + " by " + conf.Station + " in " + conf.City);
             log.Dispose();
         }

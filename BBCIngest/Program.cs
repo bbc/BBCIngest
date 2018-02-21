@@ -24,8 +24,12 @@ namespace BBCIngest
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             AppSettings conf = new AppSettings();
+            if (args.Length == 2)
+            {
+                conf.SettingsPath = args[1];
+            }
             conf.LoadAppSettings();
-            Directory.CreateDirectory(conf.Publish);
+            Directory.CreateDirectory(conf.PublishFolder);
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
             //MessageBox.Show(arg, "BBCIngest", MessageBoxButtons.OK);
@@ -63,7 +67,7 @@ namespace BBCIngest
                 Application.Run(new MainForm(conf));
             }
         }
-
+       
         static async Task MainTask(AppSettings conf)
         {
             FetchAndPublish fetcher = new FetchAndPublish(conf);

@@ -5,13 +5,37 @@ using System.Reflection;
 using System.Xml.Serialization;
 using static System.Environment;
 
+
 namespace Ingest
 {
     public class AppSettings : IPublishSettings, IFetchSettings, IScheduleSettings
     {
+        private string appName = "BBCIngest";
         public bool appSettingsChanged;
         private string defaultDir;
-        private string settingsPath = GetFolderPath(SpecialFolder.LocalApplicationData);
+        private static string defaultSettingsPath = GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        public string DefaultSettingsPath
+        {
+            get
+            {
+                return defaultSettingsPath;
+            }
+        }
+        
+        private string settingsPath = defaultSettingsPath;
+        public string SettingsPath
+        {
+            get
+            {
+                return settingsPath;
+            }
+            set
+            {
+                settingsPath = value;
+            }
+        }
+
+
         private event TerseMessageDelegate terseMessage;
 
         public void addTerseMessageListener(TerseMessageDelegate m)
@@ -37,6 +61,18 @@ namespace Ingest
         public bool RunInForeground { get; set; }
         [CategoryAttribute("Run")]
         public bool RunAsService { get; set; }
+        [CategoryAttribute("Run")]
+        public string TaskName
+        {
+            get
+            {
+                if(settingsPath == defaultSettingsPath) {
+                    return appName; 
+                }
+                string uid = shortUid(settingsPath);
+                return $"{appName}-{uid}";
+            }
+        }
 
         [CategoryAttribute("Logging")]
         public string City { get; set; }
@@ -69,6 +105,9 @@ namespace Ingest
         public int MinutesBefore { get; set; }
 
         [CategoryAttribute("Source")]
+        public int MaxAgeMinutes { get; set; }
+
+        [CategoryAttribute("Source")]
         public string Basename { get; set; }
 
         [CategoryAttribute("Source")]
@@ -86,9 +125,6 @@ namespace Ingest
         public string Hourpattern { get; set; }
 
         [CategoryAttribute("Target")]
-        public string Extension { get; set; }
-
-        [CategoryAttribute("Target")]
         public string Discdate { get; set; }
 
         [CategoryAttribute("Target")]
@@ -98,22 +134,31 @@ namespace Ingest
         public int BroadcastMinuteAfter { get; set; }
 
         [CategoryAttribute("Target")]
+        public int RetryIntervalSeconds { get; set; }
+
+        [CategoryAttribute("Target")]
         public bool SafePublishing { get; set; }
 
-        private string publish;
+        private string publishFolder;
         [CategoryAttribute("Target")]
-        public string Publish
+        public string PublishFolder
         {
             get
             {
-                return addDirectorSeparatorIfNeeded(publish);
+                return addDirectorSeparatorIfNeeded(publishFolder);
             }
 
             set
             {
-                publish = value;
+                publishFolder = value;
             }
         }
+
+        [CategoryAttribute("Source")]
+        public string PublishName { get; set; }
+
+        [CategoryAttribute("Target")]
+        public string PublishFormat { get; set; }
 
         private bool updateAllEditions;
         [CategoryAttribute("Target")]
@@ -138,7 +183,7 @@ namespace Ingest
             for (int i = 0; i < p.Length; i++)
             {
                 Object o = p[i].GetValue(this);
-                if(o != null)
+                if (o != null)
                 {
                     int l = o.ToString().Length;
                     if (l > w)
@@ -174,7 +219,7 @@ namespace Ingest
             try
             {
                 sz = new XmlSerializer(typeof(AppSettings));
-                FileInfo fi = new FileInfo(settingsPath+@"\BBCIngest.config");
+                FileInfo fi = new FileInfo($@"{settingsPath}\{appName}.config");
                 if (fi.Exists)
                 {
                     fs = fi.OpenRead();
@@ -196,25 +241,27 @@ namespace Ingest
                         fi.Delete();
                     }
                 }
-                if(!fileExists)
+                if (!fileExists)
                 {
                     Logfolder = settingsPath; // @"C:\log\";
                     Archive = settingsPath; // @"C:\archive\";
 
                     MinutesBefore = 4;
+                    MaxAgeMinutes = 10;
                     Prefix = "";
                     Basename = "";
                     Webdate = "yyMMddHHmm";
-                    Extension = "mp3";
+                    PublishFormat = "mp3";
 
                     Hourpattern = "*";
                     Minutepattern = "00,30";
 
-                    Publish = @"C:\source\";
+                    PublishFolder = @"C:\source\";
+                    PublishName = "audio";
                     //Discdate = "HHmm";
                     Discdate = "";
-                    Extension = "mp3";
                     BroadcastMinuteAfter = 0;
+                    RetryIntervalSeconds = 60;
                     SafePublishing = true;
 
                     PostLogs = true;
@@ -226,7 +273,7 @@ namespace Ingest
                     RunInForeground = false;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 terseMessage(ex.Message);
             }
@@ -250,7 +297,7 @@ namespace Ingest
             if (this.appSettingsChanged)
             {
                 XmlSerializer sz = new XmlSerializer(typeof(AppSettings));
-                StreamWriter sw = new StreamWriter(settingsPath + @"\BBCIngest.config", false);
+                StreamWriter sw = new StreamWriter($@"{settingsPath}\{appName}.config", false);
                 if (sw != null)
                 {
                     sz.Serialize(sw, this);
@@ -281,6 +328,15 @@ namespace Ingest
                 return o.TotalSeconds.ToString();
             }
             return t.ToString(format);
+        }
+
+        private string shortUid(string text)
+        {
+            return System.Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes(
+                    text.GetHashCode().ToString()
+                )
+            );
         }
     }
 }

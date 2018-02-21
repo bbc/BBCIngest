@@ -106,25 +106,29 @@ namespace BBCIngest
             {
                 if (taskInstalled)
                 {
-                    MessageBox.Show("Files will be fetched in the background");
+                    MessageBox.Show("Files will be fetched in the background", "BBC Ingest");
                     Application.Exit();
                 }
                 else
                 {
-                    MessageBox.Show("Install task to fetch files in the background");
+                    MessageBox.Show("Install task to fetch files in the background", "BBC Ingest");
                 }
             }
         }
 
         private void createTask(ScheduleInstaller schedule)
         {
-            string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            TaskDefinition td = schedule.createTaskDefinition(path);
+            string progPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string arguments = "once";
+            if(conf.SettingsPath != conf.DefaultSettingsPath) {
+                arguments = arguments + " " + conf.SettingsPath;
+            }
+            TaskDefinition td = schedule.createTaskDefinition(progPath, arguments);
             if(conf.RunAsService)
             {
                 if(schedule.installTaskAsService(td)==false)
                 {
-                    setLine1("either set RunAsService false in settings or run this program with Admin privileges");
+                    setLine1("Either set RunAsService false in settings or run this program with Admin privileges");
                     taskInstalled = false;
                     return;
                 }
@@ -165,6 +169,5 @@ namespace BBCIngest
             }
             return fetcher.showLatest();
         }
-
     }
 }

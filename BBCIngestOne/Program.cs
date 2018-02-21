@@ -17,7 +17,7 @@ namespace BBCIngestOne
             AppSettings conf = new AppSettings();
             conf.LoadAppSettings();
             conf.SaveAppSettings();
-            Directory.CreateDirectory(conf.Publish);
+            Directory.CreateDirectory(conf.PublishFolder);
             Directory.CreateDirectory(conf.Archive);
             Directory.CreateDirectory(conf.Logfolder);
             FetchAndPublish fetcher = new FetchAndPublish(conf);
