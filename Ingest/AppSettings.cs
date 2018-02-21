@@ -10,6 +10,7 @@ namespace Ingest
 {
     public class AppSettings : IPublishSettings, IFetchSettings, IScheduleSettings
     {
+        private string appName = "BBCIngest";
         public bool appSettingsChanged;
         private string defaultDir;
         private string defaultSettingsPath = GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -65,10 +66,11 @@ namespace Ingest
         {
             get
             {
-                if(conf.SettingsPath == conf.DefaultSettingsPath) {
-                    return "BBCIngest"; 
+                if(settingsPath == defaultSettingsPath) {
+                    return appName; 
                 }
-                return "BBCIngest-"+shortUid(settingsPath);
+                string uid = shortUid(settingsPath);
+                return $"{appName}-{uid}";
             }
         }
 
@@ -101,6 +103,9 @@ namespace Ingest
 
         [CategoryAttribute("Source")]
         public int MinutesBefore { get; set; }
+
+        [CategoryAttribute("Source")]
+        public int MaxAgeMinutes { get; set; }
 
         [CategoryAttribute("Source")]
         public string Basename { get; set; }
@@ -214,7 +219,7 @@ namespace Ingest
             try
             {
                 sz = new XmlSerializer(typeof(AppSettings));
-                FileInfo fi = new FileInfo(settingsPath + @"\BBCIngest.config");
+                FileInfo fi = new FileInfo($@"{settingsPath}\{appName}.config");
                 if (fi.Exists)
                 {
                     fs = fi.OpenRead();
@@ -241,8 +246,8 @@ namespace Ingest
                     Logfolder = settingsPath; // @"C:\log\";
                     Archive = settingsPath; // @"C:\archive\";
 
-                    TaskName = "BBCIngest";
                     MinutesBefore = 4;
+                    MaxAgeMinutes = 10;
                     Prefix = "";
                     Basename = "";
                     Webdate = "yyMMddHHmm";
@@ -292,7 +297,7 @@ namespace Ingest
             if (this.appSettingsChanged)
             {
                 XmlSerializer sz = new XmlSerializer(typeof(AppSettings));
-                StreamWriter sw = new StreamWriter(settingsPath + @"\BBCIngest.config", false);
+                StreamWriter sw = new StreamWriter($@"{settingsPath}\{appName}.config", false);
                 if (sw != null)
                 {
                     sz.Serialize(sw, this);
@@ -327,9 +332,11 @@ namespace Ingest
 
         private string shortUid(string text)
         {
-            var bytes = System.Text.Encoding.UTF8.GetBytes(text.GetHashCode().ToString());
-            return "BBCIngest-"+System.Convert.ToBase64String(bytes);
-
+            return System.Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes(
+                    text.GetHashCode().ToString()
+                )
+            );
         }
     }
 }

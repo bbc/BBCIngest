@@ -16,6 +16,7 @@ namespace Ingest
         string PublishName { get; set; }
         string PublishFormat { get; set; }
         int RetryIntervalSeconds { get; set; }
+        int MaxAgeMinutes { get; set; }
     }
 
     class Fetch
@@ -91,7 +92,7 @@ namespace Ingest
             if (r == null)
                 return null;
             DateTime dt = r.Value.DateTime;
-            if (dt < epoch.AddMinutes(-10))
+            if (dt < epoch.AddMinutes(-conf.MaxAgeMinutes))
                 return null; //remote file is too old - we don't want it
             chattyMessage(dt + " edition is available");
             return dt;
