@@ -12,7 +12,16 @@ namespace Ingest
     {
         public bool appSettingsChanged;
         private string defaultDir;
-        private string settingsPath = GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        private string defaultSettingsPath = GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        public string DefaultSettingsPath
+        {
+            get
+            {
+                return defaultSettingsPath;
+            }
+        }
+        
+        private string settingsPath = DefaultSettingsPath;
         public string SettingsPath
         {
             get
@@ -32,9 +41,6 @@ namespace Ingest
         {
             this.terseMessage += m;
         }
-        
-
-
 
         private string archive;
         public string Archive
@@ -54,6 +60,17 @@ namespace Ingest
         public bool RunInForeground { get; set; }
         [CategoryAttribute("Run")]
         public bool RunAsService { get; set; }
+        [CategoryAttribute("Run")]
+        public string TaskName
+        {
+            get
+            {
+                if(conf.SettingsPath == conf.DefaultSettingsPath) {
+                    return "BBCIngest"; 
+                }
+                return "BBCIngest-"+shortUid(settingsPath);
+            }
+        }
 
         [CategoryAttribute("Logging")]
         public string City { get; set; }
@@ -224,6 +241,7 @@ namespace Ingest
                     Logfolder = settingsPath; // @"C:\log\";
                     Archive = settingsPath; // @"C:\archive\";
 
+                    TaskName = "BBCIngest";
                     MinutesBefore = 4;
                     Prefix = "";
                     Basename = "";
@@ -305,6 +323,13 @@ namespace Ingest
                 return o.TotalSeconds.ToString();
             }
             return t.ToString(format);
+        }
+
+        private string shortUid(string text)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(text.GetHashCode().ToString());
+            return "BBCIngest-"+System.Convert.ToBase64String(bytes);
+
         }
     }
 }
