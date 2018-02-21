@@ -13,7 +13,7 @@ namespace Ingest
         private string appName = "BBCIngest";
         public bool appSettingsChanged;
         private string defaultDir;
-        private string defaultSettingsPath = GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        private static string defaultSettingsPath = GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         public string DefaultSettingsPath
         {
             get
@@ -22,7 +22,7 @@ namespace Ingest
             }
         }
         
-        private string settingsPath = DefaultSettingsPath;
+        private string settingsPath = defaultSettingsPath;
         public string SettingsPath
         {
             get
