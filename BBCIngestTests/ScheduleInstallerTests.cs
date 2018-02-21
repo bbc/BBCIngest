@@ -20,7 +20,7 @@ namespace BBCIngestTests
             {
                 Assert.IsNull(ts.GetTask("BBCIngest"));
             }
-            TaskDefinition td = uut.createTaskDefinition(@"C:\WINDOWS\system32\cmd.exe");
+            TaskDefinition td = uut.createTaskDefinition(@"C:\WINDOWS\system32\cmd.exe", "");
             uut.installUserTask(td);
             using (TaskService ts = new TaskService())
             {

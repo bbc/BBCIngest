@@ -19,7 +19,7 @@ namespace Ingest
         int MaxAgeMinutes { get; set; }
     }
 
-    class Fetch
+    public class Fetch
     {
         private event TerseMessageDelegate terseMessage;
         private event ChattyMessageDelegate chattyMessage;
