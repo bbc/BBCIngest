@@ -250,34 +250,8 @@ namespace Ingest
                 }
                 if (!fileExists)
                 {
-                    Logfolder = settingsPath;
-                    Archive = settingsPath;
-
-                    MinutesBefore = 4;
-                    MaxAgeMinutes = 10;
-                    Prefix = "";
-                    Basename = "";
-                    Webdate = "yyMMddHHmm";
-                    PublishFormat = "mp3";
-
-                    Hourpattern = "*";
-                    Minutepattern = "00,30";
-
-                    PublishFolder = @"C:\source\";
-                    PublishName = "audio";
-                    //Discdate = "HHmm";
-                    Discdate = "";
-                    BroadcastMinuteAfter = 0;
-                    RetryIntervalSeconds = 60;
-                    SafePublishing = true;
-
-                    PostLogs = true;
-                    LogUrl = "";
-                    City = "";
-                    Station = "";
-
-                    RunAsService = false;
-                    RunInForeground = false;
+                    setDefaults();
+                    SaveAppSettings();
                 }
             }
             catch (Exception ex)
@@ -297,6 +271,39 @@ namespace Ingest
                 this.appSettingsChanged = true;
             }
             return fileExists;
+        }
+
+        private void setDefaults()
+        {
+            Logfolder = settingsPath;
+            Archive = settingsPath;
+
+            MinutesBefore = 4;
+            MaxAgeMinutes = 10;
+            Prefix = "";
+            Basename = "";
+            Webdate = "yyMMddHHmm";
+            PublishFormat = "mp3";
+
+            Hourpattern = "*";
+            Minutepattern = "00,30";
+
+            PublishFolder = @"C:\source\";
+            PublishName = "audio";
+            //Discdate = "HHmm";
+            Discdate = "";
+            BroadcastMinuteAfter = 0;
+            RetryIntervalSeconds = 60;
+            SafePublishing = true;
+
+            PostLogs = true;
+            LogUrl = "";
+            City = "";
+            Station = "";
+
+            RunAsService = false;
+            RunInForeground = false;
+            appSettingsChanged = true;
         }
 
         public bool SaveAppSettings()
