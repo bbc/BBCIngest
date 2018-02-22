@@ -211,6 +211,10 @@ namespace Ingest
             return (AppSettings)this.MemberwiseClone();
         }
 
+        private string settingsLocation() {
+            return Path.Combine(settingsPath, $"{appName}.config");
+        }
+
         public bool LoadAppSettings()
         {
             XmlSerializer sz = null;
@@ -219,7 +223,8 @@ namespace Ingest
             try
             {
                 sz = new XmlSerializer(typeof(AppSettings));
-                FileInfo fi = new FileInfo($@"{settingsPath}\{appName}.config");
+                string path = settingsLocation();
+                FileInfo fi = new FileInfo(path);
                 if (fi.Exists)
                 {
                     fs = fi.OpenRead();
@@ -229,7 +234,9 @@ namespace Ingest
                         PropertyInfo[] p = this.GetType().GetProperties();
                         for (int i = 0; i < p.Length; i++) // or use ShallowCopy?
                         {
-                            p[i].SetValue(this, p[i].GetValue(mas));
+                            if(p[i].CanWrite) {
+                                p[i].SetValue(this, p[i].GetValue(mas));
+                            }
                         }
                         fileExists = true;
                     }
@@ -243,8 +250,8 @@ namespace Ingest
                 }
                 if (!fileExists)
                 {
-                    Logfolder = settingsPath; // @"C:\log\";
-                    Archive = settingsPath; // @"C:\archive\";
+                    Logfolder = settingsPath;
+                    Archive = settingsPath;
 
                     MinutesBefore = 4;
                     MaxAgeMinutes = 10;
@@ -297,7 +304,7 @@ namespace Ingest
             if (this.appSettingsChanged)
             {
                 XmlSerializer sz = new XmlSerializer(typeof(AppSettings));
-                StreamWriter sw = new StreamWriter($@"{settingsPath}\{appName}.config", false);
+                StreamWriter sw = new StreamWriter(settingsLocation(), false);
                 if (sw != null)
                 {
                     sz.Serialize(sw, this);
