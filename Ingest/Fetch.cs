@@ -84,7 +84,12 @@ namespace Ingest
          */
         private async Task<DateTime?> editionAvailable(DateTime epoch)
         {
-            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Head, url(epoch));
+            string u = url(epoch);
+            if(!u.StartsWith("http"))
+            {
+                return null;
+            }
+            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Head, u);
             HttpResponseMessage response = await hc.SendAsync(msg);
             msg.Dispose();
             DateTimeOffset? r = response.Content.Headers.LastModified;
