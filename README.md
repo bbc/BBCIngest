@@ -1,4 +1,4 @@
-# BBCIngest
+# BBCIngest [![Build Status](https://travis-ci.org/jcable/BBCIngest.svg?branch=master)](https://travis-ci.org/jcable/BBCIngest)
 
 Poll the web for the latest edition of an audio file.
 
