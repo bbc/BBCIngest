@@ -28,6 +28,8 @@ namespace BBCIngest
 
         private async void OnLoad(object sender, EventArgs e)
         {
+            Version version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version;
+            Text = Text + " " + version.ToString();
             ScheduleInstaller schedule = new ScheduleInstaller(conf);
             await getLatest(schedule);
             if (conf.RunInForeground)
@@ -107,12 +109,12 @@ namespace BBCIngest
                 if (taskInstalled)
                 {
                     MessageBox.Show("Files will be fetched in the background", "BBC Ingest");
-                    Application.Exit();
                 }
                 else
                 {
-                    MessageBox.Show("Install task to fetch files in the background", "BBC Ingest");
+                    MessageBox.Show("No files will be fetched until you update the task scheduler", "BBC Ingest");
                 }
+                Application.Exit();
             }
         }
 
