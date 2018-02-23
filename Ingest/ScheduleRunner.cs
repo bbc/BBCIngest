@@ -12,27 +12,6 @@ namespace Ingest
         {
         }
 
-        public DateTime next(DateTime t)
-        {
-            DateTime today = t.Date;
-            DateTime[] all = events(today);
-            for (int i = 0; i < all.Length; i++)
-            {
-                DateTime ev = all[i];
-                if (ev > t)
-                {
-                    return ev;
-                }
-            }
-            // it might be tomorrow
-            all = events(today.AddDays(1));
-            if (all.Length > 0)
-            {
-                return all[0];
-            }
-            throw new Exception("no events");
-        }
-
         public DateTime current(DateTime t)
         {
             DateTime today = t.Date;

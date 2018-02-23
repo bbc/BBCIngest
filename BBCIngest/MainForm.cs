@@ -30,15 +30,32 @@ namespace BBCIngest
         {
             Version version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version;
             Text = Text + " " + version.ToString();
-            ScheduleInstaller schedule = new ScheduleInstaller(conf);
-            await getLatest(schedule);
+            Schedule schedule = new Schedule(conf);
             if (conf.RunInForeground)
             {
+                await getLatest(schedule);
                 buttonExitOrStart.Text = "Start";
             }
             else
             {
+                IScheduleInstaller si = getScheduleInstaller(schedule);
+                taskInstalled = si.IsInstalled;
+                if(taskInstalled) {
+                    buttonRfTS.Text = "Update Task Scheduler";
+                }
+                else {
+                    buttonRfTS.Text = "Install Task";
+                }
                 buttonExitOrStart.Text = "Exit";
+            }
+        }
+
+        private IScheduleInstaller getScheduleInstaller(Schedule schedule) {
+            if(Environment.OSVersion.Platform == PlatformID.Unix) {
+                return new ScheduleInstaller(schedule);
+            }
+            else {
+                return new Win32ScheduleInstaller(schedule);
             }
         }
 
@@ -76,16 +93,18 @@ namespace BBCIngest
 
         private void buttonRfTS_Click(object sender, EventArgs e)
         {
-            ScheduleInstaller schedule = new ScheduleInstaller(conf);
-            deleteTask(schedule);
-            createTask(schedule);
+            Schedule schedule = new Schedule(conf);
+            IScheduleInstaller si = getScheduleInstaller(schedule);
+            deleteTask(si);
+            createTask(si);
             getLatest(schedule);
         }
 
         private void buttonRemoveTasks_Click(object sender, EventArgs e)
         {
-            ScheduleInstaller schedule = new ScheduleInstaller(conf);
-            deleteTask(schedule);
+            Schedule schedule = new Schedule(conf);
+            IScheduleInstaller si = getScheduleInstaller(schedule);
+            deleteTask(si);
         }
 
         private async void buttonExitOrStart_Click(object sender, EventArgs e)
@@ -94,7 +113,9 @@ namespace BBCIngest
             {
                 if(taskInstalled)
                 {
-                    deleteTask(new ScheduleInstaller(conf));
+                    Schedule schedule = new Schedule(conf);
+                    IScheduleInstaller si = getScheduleInstaller(schedule);
+                    deleteTask(si);
                 }
                 await fetcher.republish();
                 while (true)
@@ -118,17 +139,16 @@ namespace BBCIngest
             }
         }
 
-        private void createTask(ScheduleInstaller schedule)
+        private void createTask(IScheduleInstaller si)
         {
             string progPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             string arguments = "once";
             if(conf.SettingsPath != conf.DefaultSettingsPath) {
                 arguments = arguments + " " + conf.SettingsPath;
             }
-            TaskDefinition td = schedule.createTaskDefinition(progPath, arguments);
             if(conf.RunAsService)
             {
-                if(schedule.installTaskAsService(td)==false)
+                if(si.installTaskAsService(progPath, arguments)==false)
                 {
                     setLine1("Either set RunAsService false in settings or run this program with Admin privileges");
                     taskInstalled = false;
@@ -137,37 +157,27 @@ namespace BBCIngest
             }
             else
             {
-                schedule.installUserTask(td);
+                si.installUserTask(progPath, arguments);
             }
-            schedule.runTask();
+            si.runTask();
             taskInstalled = true;
         }
 
-        private void deleteTask(ScheduleInstaller schedule)
+        private void deleteTask(IScheduleInstaller si)
         {
-            DateTime? next = schedule.nextRun();
-            if (next != null)
-            {
-                schedule.deleteTaskAndTriggers();
-                taskInstalled = false;
-                setLine1("Tasks removed");
-                buttonRfTS.Text = "Install Task";
-            }
+            si.deleteTaskAndTriggers();
+            taskInstalled = false;
+            setLine1("Tasks removed");
+            buttonRfTS.Text = "Install Task";
         }
 
-        private System.Threading.Tasks.Task getLatest(ScheduleInstaller schedule)
+        private System.Threading.Tasks.Task getLatest(Schedule schedule)
         {
-            DateTime? next = schedule.nextRun();
+            DateTime? next = schedule.next();
             if (next != null)
             {
                 setLine1("Task installed and will next run at " + next.Value);
                 //setLine2("Latest is " + fetcher.lastWeHave());
-                taskInstalled = true;
-                buttonRfTS.Text = "Update Task Scheduler";
-            }
-            else
-            {
-                buttonRfTS.Text = "Install Task";
             }
             return fetcher.showLatest();
         }
