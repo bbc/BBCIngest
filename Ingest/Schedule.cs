@@ -13,14 +13,14 @@ namespace Ingest
 
     public class Schedule
     {
-        protected IScheduleSettings conf;
+        public IScheduleSettings conf;
 
         public Schedule(IScheduleSettings conf)
         {
             this.conf = conf;
         }
 
-        protected int[] minutes()
+        public int[] minutes()
         {
             string[] s = conf.Minutepattern.Split(',');
             int[] m = new int[s.Length];
@@ -76,6 +76,32 @@ namespace Ingest
                 }
             }
             return d;
+        }
+
+        public DateTime next()
+        {
+            return next(DateTime.UtcNow);
+        }
+
+        public DateTime next(DateTime t)
+        {
+            DateTime today = t.Date;
+            DateTime[] all = events(today);
+            for (int i = 0; i < all.Length; i++)
+            {
+                DateTime ev = all[i];
+                if (ev > t)
+                {
+                    return ev;
+                }
+            }
+            // it might be tomorrow
+            all = events(today.AddDays(1));
+            if (all.Length > 0)
+            {
+                return all[0];
+            }
+            throw new Exception("no events");
         }
     }
 }

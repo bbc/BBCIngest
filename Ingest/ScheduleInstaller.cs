@@ -1,133 +1,152 @@
-﻿using Microsoft.Win32.TaskScheduler;
-using System;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Ingest
 {
-    public class ScheduleInstaller : Schedule
+    public class ScheduleInstaller : IScheduleInstaller
     {
-        public ScheduleInstaller(IScheduleSettings conf) : base(conf)
-        {
+        private class Repetition {
+            public TimeSpan Interval;
         }
 
-        public TaskDefinition createTaskDefinition(String execPath, String arguments)
-        {
-            using (TaskService ts = new TaskService())
-            {
-                // Create a new task definition and assign properties
-                TaskDefinition td = ts.NewTask();
-                td.RegistrationInfo.Description = "Run BBCIngest";
+        private class Trigger {
+            public DateTime StartBoundary;
+            public Repetition Repetition = new Repetition();
+            public override string ToString(){
+                return $"{StartBoundary} {Repetition.Interval}";
+            }
+        }
 
-                td.Principal.LogonType = TaskLogonType.InteractiveToken;
-                td.Settings.DisallowStartIfOnBatteries = false;
-                td.Settings.RunOnlyIfNetworkAvailable = true;
-                td.Settings.RunOnlyIfIdle = false;
-                td.Settings.DisallowStartIfOnBatteries = false;
-                td.Settings.WakeToRun = true;
+        private class DailyTrigger : Trigger {
+        }
 
-                int[] minutes = this.minutes();
-                if (conf.Hourpattern == "*")
-                {
-                    // one trigger for each specified minute repeating each hour
-                    for (int m = 0; m < minutes.Length; m++)
-                    {
-                        TimeTrigger dt = new TimeTrigger();
-                        dt.StartBoundary = DateTime.UtcNow.Date
-                            .AddMinutes(minutes[m])
-                            .AddMinutes(-conf.MinutesBefore);
-                        dt.Repetition.Interval = TimeSpan.FromHours(1);
-                        td.Triggers.Add(dt);
-                    }
+        private class TimeTrigger : Trigger {
+        }
+
+        private class Action {
+        }
+
+        private class ExecAction: Action {
+            String a,b,c;
+
+            public ExecAction(String a, String b, String c) {
+                this.a=a;
+                this.b=b;
+                this.c=c;
+            }
+
+            public override string ToString(){
+                return $"{a} {b} {c}";
+            }
+        }
+        
+        private class TaskDefinition {
+            public List<Trigger> Triggers = new List<Trigger>();
+            public List<Action> Actions = new List<Action>();
+            public override string ToString(){
+                string triggers = "";
+                foreach (Trigger item in Triggers){
+                    triggers += item.ToString() + ", ";
                 }
-                else
+                string actions = "";
+                foreach (Action item in Actions){
+                    actions += item.ToString() + ", ";
+                }
+                return $"Triggers:{triggers}Actions:{actions}";
+            }
+
+        }
+
+        private Schedule schedule;
+        private bool installed = false;
+
+        public bool IsInstalled {
+            get
+            {
+                return installed;
+            }            
+        }
+
+        public ScheduleInstaller(Schedule schedule)
+        {
+            this.schedule = schedule;
+        }
+
+        private TaskDefinition createTaskDefinition(string execPath, string arguments)
+        {
+            // Create a new task definition and assign properties
+            TaskDefinition td = new TaskDefinition();
+
+            int[] minutes = schedule.minutes();
+            if (schedule.conf.Hourpattern == "*")
+            {
+                // one trigger for each specified minute repeating each hour
+                for (int m = 0; m < minutes.Length; m++)
                 {
-                    // one trigger for each specified minute/hour combination, repeating daily
-                    string[] s = conf.Hourpattern.Split(',');
-                    for (int i = 0; i < s.Length; i++)
+                    TimeTrigger dt = new TimeTrigger();
+                    dt.StartBoundary = DateTime.UtcNow.Date
+                        .AddMinutes(minutes[m])
+                        .AddMinutes(-schedule.conf.MinutesBefore);
+                    dt.Repetition.Interval = TimeSpan.FromHours(1);
+                    td.Triggers.Add(dt);
+                }
+            }
+            else
+            {
+                // one trigger for each specified minute/hour combination, repeating daily
+                string[] s = schedule.conf.Hourpattern.Split(',');
+                for (int i = 0; i < s.Length; i++)
+                {
+                    int h;
+                    if (int.TryParse(s[i], out h))
                     {
-                        int h;
-                        if (int.TryParse(s[i], out h))
+                        for (int m = 0; m < minutes.Length; m++)
                         {
-                            for (int m = 0; m < minutes.Length; m++)
-                            {
-                                DailyTrigger dt = new DailyTrigger();
-                                dt.StartBoundary = DateTime.UtcNow.Date
-                                    .AddHours(h)
-                                    .AddMinutes(minutes[m])
-                                    .AddMinutes(-conf.MinutesBefore);
-                                td.Triggers.Add(dt);
-                            }
+                            DailyTrigger dt = new DailyTrigger();
+                            dt.StartBoundary = DateTime.UtcNow.Date
+                                .AddHours(h)
+                                .AddMinutes(minutes[m])
+                                .AddMinutes(-schedule.conf.MinutesBefore);
+                            td.Triggers.Add(dt);
                         }
                     }
                 }
-
-                // Add an action that will launch BBCIngest whenever the trigger fires
-                td.Actions.Add(new ExecAction(execPath, arguments, null));
-                return td;
             }
+
+            // Add an action that will launch BBCIngest whenever the trigger fires
+            td.Actions.Add(new ExecAction(execPath, arguments, null));
+            return td;
         }
 
-        public bool installTaskAsService(TaskDefinition td)
+        public bool installTaskAsService(string execPath, string arguments)
         {
-            using (TaskService ts = new TaskService())
-            {
-                // Register the task in the root folder
-                try
-                {
-                    ts.RootFolder.RegisterTaskDefinition(conf.TaskName, td,
-                       TaskCreation.CreateOrUpdate, "SYSTEM", null,
-                        TaskLogonType.ServiceAccount);
-                }
-                catch (System.UnauthorizedAccessException e)
-                {
-                    return false;
-                }
-                return true;
-            }
+            TaskDefinition td = createTaskDefinition(execPath, arguments);
+            Console.WriteLine($"installTaskAsService {schedule.conf.TaskName}, {td}");
+            installed = true;
+            return true;
         }
 
-        public void installUserTask(TaskDefinition td)
+        public void installUserTask(string execPath, string arguments)
         {
-            using (TaskService ts = new TaskService())
-            {
-                // Register the task in the root folder
-                ts.RootFolder.RegisterTaskDefinition(conf.TaskName, td);
-            }
+            TaskDefinition td = createTaskDefinition(execPath, arguments);
+            Console.WriteLine($"installUserTask {schedule.conf.TaskName}, {td}");
+            installed = true;
         }
 
         public void runTask()
         {
-            using (TaskService ts = new TaskService())
-            {
-                Task t = ts.GetTask(conf.TaskName);
-                if (t != null)
-                {
-                    t.Run();
-                }
-            }
+            Console.WriteLine($"runTask {schedule.conf.TaskName}");
         }
 
         public void deleteTaskAndTriggers()
         {
-            using (TaskService ts = new TaskService())
-            {
-                if (ts.GetTask(conf.TaskName) != null)
-                {
-                    ts.RootFolder.DeleteTask(conf.TaskName);
-                }
-            }
+            Console.WriteLine($"deleteTaskAndTriggers {schedule.conf.TaskName}");
+            installed = false;
         }
 
         public DateTime? nextRun()
         {
-            using (TaskService ts = new TaskService())
-            {
-                Task t = ts.GetTask(conf.TaskName);
-                if (t != null)
-                {
-                    return t.NextRunTime;
-                }
-            }
-            return null;
+            return schedule.next();
         }
     }
 }

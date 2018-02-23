@@ -54,8 +54,15 @@ namespace BBCIngest
             }
             else if (arg.Equals("uninstall"))
             {
-                ScheduleInstaller schedule = new ScheduleInstaller(conf);
-                schedule.deleteTaskAndTriggers();
+                Schedule schedule = new Schedule(conf);
+                IScheduleInstaller si;
+                if(Environment.OSVersion.Platform == PlatformID.Unix) {
+                  si = new ScheduleInstaller(schedule);
+                }
+                else {
+                  si = new Win32ScheduleInstaller(schedule);
+                }
+                si.deleteTaskAndTriggers();
                 //MessageBox.Show("Scheduled Tasks Removed", "BBCIngest", MessageBoxButtons.OK);
             }
             else if (arg.Equals("once"))
