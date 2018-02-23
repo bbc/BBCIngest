@@ -79,6 +79,7 @@ namespace Ingest
                 }
                 catch (System.UnauthorizedAccessException e)
                 {
+                    Console.WriteLine(e);
                     return false;
                 }
                 return true;
