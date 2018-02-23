@@ -6,7 +6,7 @@ using Microsoft.Win32.TaskScheduler;
 namespace BBCIngestTests
 {
     [TestClass()]
-    class ScheduleInstallerTests
+    class Win32ScheduleInstallerTests
     {
         [TestMethod()]
         public void TaskSchedulerTest()
@@ -14,14 +14,14 @@ namespace BBCIngestTests
             AppSettings conf = new AppSettings();
             conf.Hourpattern = "*";
             conf.Minutepattern = "00,30";
-            ScheduleInstaller uut = new ScheduleInstaller(conf);
+            Schedule schedule = new Schedule(conf);
+            Win32ScheduleInstaller uut = new Win32ScheduleInstaller(schedule);
             uut.deleteTaskAndTriggers();
             using (TaskService ts = new TaskService())
             {
                 Assert.IsNull(ts.GetTask("BBCIngest"));
             }
-            TaskDefinition td = uut.createTaskDefinition(@"C:\WINDOWS\system32\cmd.exe", "");
-            uut.installUserTask(td);
+            uut.installUserTask(@"C:\WINDOWS\system32\cmd.exe", "");
             using (TaskService ts = new TaskService())
             {
                 Microsoft.Win32.TaskScheduler.Task t = ts.GetTask("BBCIngest");
@@ -30,7 +30,7 @@ namespace BBCIngestTests
                 // getruntimes is exclusive of the start time
                 DateTime[] runtimes = t.GetRunTimes(sod.AddMilliseconds(-1), sod.AddMilliseconds(-1).AddDays(1));
                 Assert.AreEqual(48, runtimes.Length);
-                DateTime[] events = uut.events(sod);
+                DateTime[] events = schedule.events(sod);
                 Assert.AreEqual(48, events.Length);
                 for (int i = 0; i < 48; i++)
                 {
