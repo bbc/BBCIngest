@@ -8,7 +8,7 @@ using static System.Environment;
 
 namespace Ingest
 {
-    public class AppSettings : IPublishSettings, IFetchSettings, IScheduleSettings
+    public class AppSettings : IPublishSettings, IFetchSettings, IScheduleSettings, ILogSettings
     {
         private string appName = "BBCIngest";
         public bool appSettingsChanged;

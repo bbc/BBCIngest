@@ -5,15 +5,24 @@ using System.Text;
 
 namespace Ingest
 {
+    public interface ILogSettings
+    {
+        bool PostLogs { get; set; }
+        string Logfolder { get; set; }
+        string LogUrl { get; set; }
+        string Station { get; set; }
+        string City { get; set; }
+    }
+
     public delegate void LogDelegate(string s);
 
     public class Logging
     {
         private event LogDelegate logevent;
-        private AppSettings conf;
+        private ILogSettings conf;
         private HttpClient hc;
 
-        public Logging(AppSettings conf, HttpClient hc)
+        public Logging(ILogSettings conf, HttpClient hc)
         {
             this.conf = conf;
             this.hc = hc;
@@ -29,6 +38,7 @@ namespace Ingest
         internal void write(string logmessage)
         {
             DateTime dt = DateTime.UtcNow;
+            Directory.CreateDirectory(conf.Logfolder);
             StreamWriter log = System.IO.File.AppendText(conf.Logfolder + "bbcingest.log");
             log.WriteLine(dt.ToString() + " "+ logmessage + " by " + conf.Station + " in " + conf.City);
             log.Dispose();

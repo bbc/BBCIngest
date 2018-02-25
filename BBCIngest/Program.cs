@@ -31,7 +31,6 @@ namespace BBCIngest
             conf.LoadAppSettings();
             Directory.CreateDirectory(conf.PublishFolder);
             Directory.CreateDirectory(conf.Archive);
-            Directory.CreateDirectory(conf.Logfolder);
             //MessageBox.Show(arg, "BBCIngest", MessageBoxButtons.OK);
             if (arg.Equals("install"))
             {

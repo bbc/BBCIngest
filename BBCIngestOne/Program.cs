@@ -19,7 +19,6 @@ namespace BBCIngestOne
             conf.SaveAppSettings();
             Directory.CreateDirectory(conf.PublishFolder);
             Directory.CreateDirectory(conf.Archive);
-            Directory.CreateDirectory(conf.Logfolder);
             FetchAndPublish fetcher = new FetchAndPublish(conf);
             fetcher.listenForTerseMessages(new TerseMessageDelegate(Console.WriteLine));
             fetcher.listenForChattyMessages(new ChattyMessageDelegate(Console.WriteLine));
