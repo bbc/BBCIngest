@@ -126,22 +126,8 @@ namespace Ingest
         public bool IsInstalled {
             get
             {
-                DateTime? next = nextRun();            
-                return next !=null;
-            }            
-        }
-
-        public DateTime? nextRun()
-        {
-            using (TaskService ts = new TaskService())
-            {
-                Task t = ts.GetTask(schedule.conf.TaskName);
-                if (t != null)
-                {
-                    return t.NextRunTime;
-                }
-            }
-            return null;
+                return (new TaskService()).GetTask(schedule.conf.TaskName) != null;
+            }           
         }
     }
 }

@@ -143,10 +143,5 @@ namespace Ingest
             Console.WriteLine($"deleteTaskAndTriggers {schedule.conf.TaskName}");
             installed = false;
         }
-
-        public DateTime? nextRun()
-        {
-            return schedule.next();
-        }
     }
 }
