@@ -5,6 +5,7 @@ namespace Ingest
 {
     public interface IScheduleSettings
     {
+        bool RunAsService { get; set; }
         string TaskName { get; }
         string Minutepattern { get; set; }
         string Hourpattern { get; set; }

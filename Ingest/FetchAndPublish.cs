@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -14,25 +13,25 @@ namespace Ingest
     {
         private event TerseMessageDelegate terseMessage;
         private AppSettings conf;
-        private Logging log;
         private ScheduleRunner schedule;
         private HttpClient hc;
         Fetch fetcher;
         Publish publisher;
+        LogDelegate logger;
 
-        public FetchAndPublish(AppSettings conf)
+        public FetchAndPublish(AppSettings conf, HttpClient hc)
         {
-            HttpClientHandler httpClientHandler = new HttpClientHandler()
-            {
-                Proxy = WebRequest.GetSystemWebProxy()
-            };
-            hc = new HttpClient(httpClientHandler);
+            this.hc = hc;
             this.conf = conf;
             this.fetcher = new Fetch(conf, hc);
             this.publisher = new Publish(conf);
-            log = new Logging(conf, hc);
             schedule = new ScheduleRunner(conf);
-            fetcher.addLogListener(new LogDelegate(log.WriteLine));
+        }
+
+        public void addLogListener(LogDelegate logDelegate)
+        {
+            logger += logDelegate;
+            fetcher.addLogListener(logDelegate);
         }
 
         public void listenForTerseMessages(TerseMessageDelegate m)
@@ -122,7 +121,7 @@ namespace Ingest
             catch (Exception ex)
             {
                 terseMessage(ex.Message);
-                log.WriteLine(ex.Message);
+                logger(ex.Message);
                 // best delete the current file so we will fetch another
                 FileInfo f = new FileInfo(fetcher.lastWeHave());
                 f.Delete();
@@ -145,7 +144,7 @@ namespace Ingest
                 message = "No usable file";
             }
             terseMessage(message);
-            log.WriteLine(message);
+            logger(message);
         }
 
         protected virtual void Dispose(bool all)

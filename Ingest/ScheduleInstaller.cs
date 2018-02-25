@@ -72,6 +72,18 @@ namespace Ingest
             this.schedule = schedule;
         }
 
+        public bool installTask(string execPath, string arguments)
+        {
+            if (schedule.conf.RunAsService)
+                return installTaskAsService(execPath, arguments);
+            else
+            {
+                installUserTask(execPath, arguments);
+                return true;
+            }
+
+        }
+
         private TaskDefinition createTaskDefinition(string execPath, string arguments)
         {
             // Create a new task definition and assign properties
@@ -118,7 +130,7 @@ namespace Ingest
             return td;
         }
 
-        public bool installTaskAsService(string execPath, string arguments)
+        private bool installTaskAsService(string execPath, string arguments)
         {
             TaskDefinition td = createTaskDefinition(execPath, arguments);
             Console.WriteLine($"installTaskAsService {schedule.conf.TaskName}, {td}");
@@ -126,7 +138,7 @@ namespace Ingest
             return true;
         }
 
-        public void installUserTask(string execPath, string arguments)
+        private void installUserTask(string execPath, string arguments)
         {
             TaskDefinition td = createTaskDefinition(execPath, arguments);
             Console.WriteLine($"installUserTask {schedule.conf.TaskName}, {td}");

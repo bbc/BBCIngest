@@ -14,16 +14,19 @@ namespace BBCIngest
         private ConcurrentQueue<String> line1;
         FetchAndPublish fetcher;
         private bool taskInstalled = false;
+        private LogDelegate logDelegate;
 
-        public MainForm(AppSettings conf)
+        public MainForm(AppSettings conf, FetchAndPublish fetcher)
         {
             this.conf = conf;
+            this.fetcher = fetcher;
             line1 = new ConcurrentQueue<string>();
             InitializeComponent();
-            fetcher = new FetchAndPublish(conf);
-            fetcher.listenForTerseMessages(new TerseMessageDelegate(setLine1));
-            fetcher.listenForChattyMessages(new ChattyMessageDelegate(setLine1));
-            fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(setLine2));
+        }
+
+        public void addLogListener(LogDelegate logDelegate)
+        {
+            this.logDelegate += logDelegate;
         }
 
         private async void OnLoad(object sender, EventArgs e)
@@ -31,6 +34,9 @@ namespace BBCIngest
             Version version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version;
             Text = Text + " " + version.ToString();
             Schedule schedule = new Schedule(conf);
+            fetcher.listenForTerseMessages(new TerseMessageDelegate(setLine1));
+            fetcher.listenForChattyMessages(new ChattyMessageDelegate(setLine1));
+            fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(setLine2));
             if (conf.RunInForeground)
             {
                 await getLatest(schedule);
@@ -55,7 +61,10 @@ namespace BBCIngest
                 return new ScheduleInstaller(schedule);
             }
             else {
-                return new Win32ScheduleInstaller(schedule);
+                Win32ScheduleInstaller si = new Win32ScheduleInstaller(schedule);
+                si.addTerseMessageListener(new TerseMessageDelegate(setLine1));
+                si.addLogListener(logDelegate);
+                return si;
             }
         }
 
@@ -85,8 +94,6 @@ namespace BBCIngest
             {
                 conf = sf.AppSettings;
                 conf.SaveAppSettings();
-                Logging log = new Ingest.Logging(conf, null);
-                log.WriteLine("new config");
             }
             sf.Dispose();
         }
@@ -133,7 +140,8 @@ namespace BBCIngest
                 }
                 else
                 {
-                    MessageBox.Show("No files will be fetched until you update the task scheduler", "BBC Ingest");
+                    MessageBox.Show("No files will be fetched until you update the task scheduler"
+                        +"\n or alternatively set to run in the foreground in settings", "BBC Ingest");
                 }
                 Application.Exit();
             }
@@ -146,21 +154,9 @@ namespace BBCIngest
             if(conf.SettingsPath != conf.DefaultSettingsPath) {
                 arguments = arguments + " " + conf.SettingsPath;
             }
-            if(conf.RunAsService)
-            {
-                if(si.installTaskAsService(progPath, arguments)==false)
-                {
-                    setLine1("Either set RunAsService false in settings or run this program with Admin privileges");
-                    taskInstalled = false;
-                    return;
-                }
-            }
-            else
-            {
-                si.installUserTask(progPath, arguments);
-            }
-            si.runTask();
-            taskInstalled = true;
+            taskInstalled = si.installTask(progPath, arguments);
+            if(taskInstalled)
+                si.runTask();
         }
 
         private void deleteTask(IScheduleInstaller si)

@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Ingest;
 using System.IO;
+using System.Net.Http;
+using System.Net;
 
 namespace BBCIngestOne
 {
@@ -19,10 +21,16 @@ namespace BBCIngestOne
             conf.SaveAppSettings();
             Directory.CreateDirectory(conf.PublishFolder);
             Directory.CreateDirectory(conf.Archive);
-            FetchAndPublish fetcher = new FetchAndPublish(conf);
+            HttpClientHandler httpClientHandler = new HttpClientHandler()
+            {
+                Proxy = WebRequest.GetSystemWebProxy()
+            };
+            HttpClient hc = new HttpClient(httpClientHandler);
+            FetchAndPublish fetcher = new FetchAndPublish(conf, hc);
             fetcher.listenForTerseMessages(new TerseMessageDelegate(Console.WriteLine));
             fetcher.listenForChattyMessages(new ChattyMessageDelegate(Console.WriteLine));
             fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(Console.WriteLine));
+            fetcher.addLogListener(new LogDelegate(Console.WriteLine));
             await fetcher.republish();
             try
             {

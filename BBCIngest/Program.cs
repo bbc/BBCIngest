@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Ingest;
+using System.Net.Http;
+using System.Net;
 
 namespace BBCIngest
 {
@@ -55,28 +57,42 @@ namespace BBCIngest
             {
                 Schedule schedule = new Schedule(conf);
                 IScheduleInstaller si;
-                if(Environment.OSVersion.Platform == PlatformID.Unix) {
-                  si = new ScheduleInstaller(schedule);
+                if (Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    si = new ScheduleInstaller(schedule);
                 }
-                else {
-                  si = new Win32ScheduleInstaller(schedule);
+                else
+                {
+                    si = new Win32ScheduleInstaller(schedule);
                 }
                 si.deleteTaskAndTriggers();
-                //MessageBox.Show("Scheduled Tasks Removed", "BBCIngest", MessageBoxButtons.OK);
-            }
-            else if (arg.Equals("once"))
-            {
-                MainTask(conf).Wait();
             }
             else
             {
-                Application.Run(new MainForm(conf));
+                HttpClientHandler httpClientHandler = new HttpClientHandler()
+                {
+                    Proxy = WebRequest.GetSystemWebProxy()
+                };
+                HttpClient hc = new HttpClient(httpClientHandler);
+                Logging log = new Logging(conf, hc);
+                FetchAndPublish fetcher = new FetchAndPublish(conf, hc);
+                LogDelegate ld = new LogDelegate(log.WriteLine);
+                fetcher.addLogListener(ld);
+                if (arg.Equals("once"))
+                {
+                    MainTask(conf, fetcher).Wait();
+                }
+                else
+                {
+                    MainForm mf = new MainForm(conf, fetcher);
+                    mf.addLogListener(ld);
+                    Application.Run(mf);
+                }
             }
         }
        
-        static async Task MainTask(AppSettings conf)
+        static async Task MainTask(AppSettings conf, FetchAndPublish fetcher)
         {
-            FetchAndPublish fetcher = new FetchAndPublish(conf);
             TrayNotify notify = new TrayNotify(fetcher);
             await fetcher.republish();
             DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);
