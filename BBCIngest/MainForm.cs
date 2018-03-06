@@ -149,7 +149,7 @@ namespace BBCIngest
 
         private void createTask(IScheduleInstaller si)
         {
-            string progPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string progPath = "\""+System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName+"\"";
             string arguments = "once";
             if(conf.SettingsPath != conf.DefaultSettingsPath) {
                 arguments = arguments + " \"" + conf.SettingsPath + "\"";
