@@ -152,7 +152,7 @@ namespace BBCIngest
             string progPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             string arguments = "once";
             if(conf.SettingsPath != conf.DefaultSettingsPath) {
-                arguments = arguments + " " + conf.SettingsPath;
+                arguments = arguments + " \"" + conf.SettingsPath + "\"";
             }
             taskInstalled = si.installTask(progPath, arguments);
             if(taskInstalled)
