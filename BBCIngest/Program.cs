@@ -84,6 +84,12 @@ namespace BBCIngest
                 }
                 else
                 {
+                    if (arg.Equals("fg")) {
+                        conf.RunInForeground = true;
+                    }
+                    if (arg.Equals("bg")) {
+                        conf.RunInForeground = false;
+                    }
                     MainForm mf = new MainForm(conf, fetcher);
                     mf.addLogListener(ld);
                     Application.Run(mf);

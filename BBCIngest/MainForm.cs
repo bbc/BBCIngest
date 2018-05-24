@@ -39,8 +39,20 @@ namespace BBCIngest
             fetcher.listenForEditionStatus(new ShowEditionStatusDelegate(setLine2));
             if (conf.RunInForeground)
             {
-                await getLatest(schedule);
+                buttonRfTS.Visible = false;
+                buttonRemoveTasks.Visible = false;
                 buttonExitOrStart.Text = "Start";
+                buttonExitOrStart.Visible = false;
+
+                await getLatest(schedule);
+                await fetcher.republish();
+                while (true)
+                {
+                    DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);
+                    // wait until after broadcast date before trying for next edition
+                    await fetcher.waitUntil(bc);
+                }
+                
             }
             else
             {
@@ -124,13 +136,22 @@ namespace BBCIngest
                     IScheduleInstaller si = getScheduleInstaller(schedule);
                     deleteTask(si);
                 }
-                await fetcher.republish();
-                while (true)
-                {
-                    DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);
-                    // wait until after broadcast date before trying for next edition
-                    await fetcher.waitUntil(bc);
+                if(buttonExitOrStart.Text == "Start") {
+                    buttonExitOrStart.Text = "Stop";
+                    await fetcher.republish();
+                    while (true)
+                    {
+                        DateTime bc = await fetcher.fetchAndPublish(DateTime.UtcNow);
+                        // wait until after broadcast date before trying for next edition
+                        await fetcher.waitUntil(bc);
+                    }
                 }
+                else {
+                    buttonExitOrStart.Text = "Start";
+                    // TODO cancel await
+                }
+
+
             }
             else
             {
@@ -172,8 +193,10 @@ namespace BBCIngest
             DateTime? next = schedule.next();
             if (next != null)
             {
-                setLine1("Task installed and will next run at " + next.Value);
-                //setLine2("Latest is " + fetcher.lastWeHave());
+                if (!conf.RunInForeground) {
+                    setLine1("Task installed and will next run at " + next.Value);
+                    //setLine2("Latest is " + fetcher.lastWeHave());
+                }
             }
             return fetcher.showLatest();
         }
