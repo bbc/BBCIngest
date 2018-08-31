@@ -97,8 +97,11 @@ namespace Ingest
             if (r == null)
                 return null;
             DateTime dt = r.Value.DateTime;
-            if (dt < epoch.AddMinutes(-conf.MaxAgeMinutes))
-                return null; //remote file is too old - we don't want it
+            chattyMessage(dt + " edition is available");            
+            if (dt < epoch.AddMinutes(-conf.MaxAgeMinutes)) {
+                chattyMessage("remote file is too old - we don't want it");
+                return null;
+            }
             chattyMessage(dt + " edition is available");
             return dt;
         }
